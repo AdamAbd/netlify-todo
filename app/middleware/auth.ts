@@ -1,10 +1,8 @@
 export default defineNuxtRouteMiddleware((to) => {
   const { isAuthenticated, isLoading } = useAuth()
 
-  // Skip middleware while loading auth state
-  if (isLoading.value) return
-
-  if (!isAuthenticated.value) {
+  // Redirect to login while auth state is loading or user is not authenticated
+  if (isLoading.value || !isAuthenticated.value) {
     return navigateTo('/login', { replace: true })
   }
 })
