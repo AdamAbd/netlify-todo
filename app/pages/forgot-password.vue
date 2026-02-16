@@ -11,8 +11,6 @@
     meta: [{ name: 'description', content: 'Reset your Todoist password via email.' }],
   })
 
-  const { forgotPassword } = useAuth()
-
   const email = ref('')
   const isSubmitting = ref(false)
   const errorMessage = ref('')
@@ -22,13 +20,7 @@
     errorMessage.value = ''
     isSubmitting.value = true
 
-    const result = await forgotPassword(email.value)
-
-    if (result.success) {
-      isSuccess.value = true
-    } else {
-      errorMessage.value = result.error || 'Failed to send reset email.'
-    }
+    // TODO: Implement forgot password
 
     isSubmitting.value = false
   }

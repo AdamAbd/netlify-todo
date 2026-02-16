@@ -13,9 +13,6 @@
     ],
   })
 
-  const { login, loginWithGoogle } = useAuth()
-  const router = useRouter()
-
   const form = reactive({
     email: '',
     password: '',
@@ -28,19 +25,12 @@
     errorMessage.value = ''
     isSubmitting.value = true
 
-    const result = await login(form.email, form.password)
-
-    if (result.success) {
-      router.push('/home')
-    } else {
-      errorMessage.value = result.error || 'Login failed.'
-    }
-
+    // TODO: Implement login with better-auth
     isSubmitting.value = false
   }
 
   const handleGoogleLogin = () => {
-    loginWithGoogle()
+    // TODO: Implement google login with better-auth
   }
 </script>
 
