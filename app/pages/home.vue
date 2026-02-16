@@ -291,6 +291,7 @@
                   type="button"
                   class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
                   @click="createForm.imageUrl = ''"
+                  aria-label="Remove image"
                 >
                   <XIcon class="size-3" />
                 </button>
