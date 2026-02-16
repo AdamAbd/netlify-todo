@@ -15,6 +15,7 @@
     UploadIcon,
     ListChecksIcon,
   } from 'lucide-vue-next'
+  import { toast } from 'vue-sonner'
   import type { TodoStatus, TodoItem, CreateTodoPayload } from '~/composables/useTodos'
 
   definePageMeta({
@@ -97,6 +98,12 @@
       isCreateDialogOpen.value = false
       resetCreateForm()
     }
+  }
+
+  const handleImageError = () => {
+    createForm.imageUrl = ''
+
+    toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
   }
 
   // Edit form
@@ -268,11 +275,11 @@
               </div>
               <!-- Image preview -->
               <div v-if="createForm.imageUrl" class="relative overflow-hidden rounded-lg border">
-                <img
+                <NuxtImg
                   :src="createForm.imageUrl"
                   alt="Preview"
                   class="h-32 w-full object-cover"
-                  @error="createForm.imageUrl = ''"
+                  @error="handleImageError"
                 />
                 <button
                   type="button"
