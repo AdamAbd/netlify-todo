@@ -314,6 +314,7 @@
                     type="button"
                     class="text-muted-foreground hover:text-destructive"
                     @click="removeItem(idx)"
+                    aria-label="Remove checklist item"
                   >
                     <XIcon class="size-3.5" />
                   </button>

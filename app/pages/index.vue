@@ -83,7 +83,7 @@
           <span class="text-lg font-bold tracking-tight">Todoist</span>
         </NuxtLink>
         <div class="flex items-center gap-2">
-          <Button variant="ghost" size="icon" @click="toggleTheme">
+          <Button variant="ghost" size="icon" @click="toggleTheme" aria-label="Toggle theme">
             <SunIcon v-if="isDark" class="size-4" />
             <MoonIcon v-else class="size-4" />
           </Button>
