@@ -35,25 +35,7 @@
   const isSuccess = ref(false)
 
   const passwordsMatch = computed(() => form.password === form.confirmPassword)
-
-  const passwordStrength = computed(() => {
-    const p = form.password
-    if (!p) return { score: 0, label: '', color: '' }
-    let score = 0
-    if (p.length >= 8) score++
-    if (/[A-Z]/.test(p)) score++
-    if (/[0-9]/.test(p)) score++
-    if (/[^A-Za-z0-9]/.test(p)) score++
-
-    const map: Record<number, { label: string; color: string }> = {
-      0: { label: '', color: '' },
-      1: { label: 'Weak', color: 'bg-destructive' },
-      2: { label: 'Fair', color: 'bg-accent' },
-      3: { label: 'Good', color: 'bg-secondary' },
-      4: { label: 'Strong', color: 'bg-secondary' },
-    }
-    return { score, ...map[score] }
-  })
+  const passwordStrength = usePasswordStrength(() => form.password)
 
   const handleSubmit = async () => {
     errorMessage.value = ''
@@ -110,7 +92,7 @@
             Your password has been updated. You can now sign in with your new password.
           </p>
         </div>
-        <Button class="h-11 w-full" as-child>
+        <Button size="lg" class="w-full" as-child>
           <NuxtLink to="/login">Go to sign in</NuxtLink>
         </Button>
       </div>
@@ -214,7 +196,8 @@
 
         <Button
           type="submit"
-          class="h-11 w-full"
+          size="lg"
+          class="w-full"
           :disabled="isSubmitting || !passwordsMatch || !token"
         >
           <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />

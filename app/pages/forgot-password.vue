@@ -60,8 +60,8 @@
           </p>
         </div>
         <div class="space-y-3">
-          <Button class="h-11 w-full" @click="isSuccess = false"> Send another link </Button>
-          <Button variant="outline" class="h-11 w-full" as-child>
+          <Button size="lg" class="w-full" @click="isSuccess = false"> Send another link </Button>
+          <Button variant="outline" size="lg" class="w-full" as-child>
             <NuxtLink to="/login">Back to sign in</NuxtLink>
           </Button>
         </div>
@@ -105,7 +105,7 @@
           </div>
         </div>
 
-        <Button type="submit" class="h-11 w-full" :disabled="isSubmitting">
+        <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting">
           <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />
           {{ isSubmitting ? 'Sending...' : 'Send reset link' }}
         </Button>

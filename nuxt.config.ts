@@ -7,6 +7,14 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'netlify-edge',
   },
+  routeRules: {
+    '/': { prerender: true },
+    '/login': { prerender: true },
+    '/register': { prerender: true },
+    '/forgot-password': { prerender: true },
+    '/reset-password': { prerender: true },
+    '/home': { isr: true },
+  },
   css: ['@/assets/css/main.css'],
   modules: [
     '@nuxt/eslint',

@@ -15,7 +15,8 @@
     UploadIcon,
     ListChecksIcon,
   } from 'lucide-vue-next'
-  import type { TodoStatus, TodoItem, CreateTodoPayload } from '~/composables/useTodos'
+  import { toast } from 'vue-sonner'
+  import type { Todo, TodoStatus, TodoItem, CreateTodoPayload } from '~/composables/useTodos'
 
   definePageMeta({
     middleware: ['auth'],
@@ -52,7 +53,7 @@
   // Dialog state
   const isCreateDialogOpen = ref(false)
   const isEditDialogOpen = ref(false)
-  const editingTodo = ref<any>(null)
+  const editingTodo = ref<Todo | null>(null)
 
   // Create form
   const createForm = reactive<CreateTodoPayload>({
@@ -99,6 +100,18 @@
     }
   }
 
+  const handleImageError = () => {
+    createForm.imageUrl = ''
+
+    toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
+  }
+
+  const handleEditImageError = () => {
+    editForm.imageUrl = ''
+
+    toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
+  }
+
   // Edit form
   const editForm = reactive<{
     title: string
@@ -126,7 +139,7 @@
     editForm.items.splice(index, 1)
   }
 
-  const openEdit = (todo: any) => {
+  const openEdit = (todo: Todo) => {
     editingTodo.value = todo
     editForm.title = todo.title
     editForm.description = todo.description || ''
@@ -268,16 +281,17 @@
               </div>
               <!-- Image preview -->
               <div v-if="createForm.imageUrl" class="relative overflow-hidden rounded-lg border">
-                <img
+                <NuxtImg
                   :src="createForm.imageUrl"
                   alt="Preview"
                   class="h-32 w-full object-cover"
-                  @error="createForm.imageUrl = ''"
+                  @error="handleImageError"
                 />
                 <button
                   type="button"
                   class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
                   @click="createForm.imageUrl = ''"
+                  aria-label="Remove image"
                 >
                   <XIcon class="size-3" />
                 </button>
@@ -307,6 +321,7 @@
                     type="button"
                     class="text-muted-foreground hover:text-destructive"
                     @click="removeItem(idx)"
+                    aria-label="Remove checklist item"
                   >
                     <XIcon class="size-3.5" />
                   </button>
@@ -575,16 +590,17 @@
               />
             </div>
             <div v-if="editForm.imageUrl" class="relative overflow-hidden rounded-lg border">
-              <img
+              <NuxtImg
                 :src="editForm.imageUrl"
                 alt="Preview"
                 class="h-32 w-full object-cover"
-                @error="editForm.imageUrl = ''"
+                @error="handleEditImageError"
               />
               <button
                 type="button"
                 class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
                 @click="editForm.imageUrl = ''"
+                aria-label="Remove image"
               >
                 <XIcon class="size-3" />
               </button>
@@ -614,6 +630,7 @@
                   type="button"
                   class="text-muted-foreground hover:text-destructive"
                   @click="removeEditItem(idx)"
+                  aria-label="Remove item"
                 >
                   <XIcon class="size-3.5" />
                 </button>
