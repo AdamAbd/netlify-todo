@@ -7,16 +7,6 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 Make sure to install dependencies:
 
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
 bun install
 ```
 
@@ -25,16 +15,6 @@ bun install
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
 bun run dev
 ```
 
@@ -43,33 +23,514 @@ bun run dev
 Build the application for production:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
 bun run build
 ```
 
 Locally preview production build:
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
 bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+```
+netlify-todo
+├─ .agent
+│  └─ rules
+│     └─ 00-follow-agents-md.md
+├─ .prettierignore
+├─ .prettierrc
+├─ AGENTS.md
+├─ README.md
+├─ app
+│  ├─ app.vue
+│  ├─ assets
+│  │  └─ css
+│  │     └─ main.css
+│  ├─ components
+│  │  └─ ui
+│  │     ├─ accordion
+│  │     │  ├─ Accordion.vue
+│  │     │  ├─ AccordionContent.vue
+│  │     │  ├─ AccordionItem.vue
+│  │     │  ├─ AccordionTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ alert
+│  │     │  ├─ Alert.vue
+│  │     │  ├─ AlertDescription.vue
+│  │     │  ├─ AlertTitle.vue
+│  │     │  └─ index.ts
+│  │     ├─ alert-dialog
+│  │     │  ├─ AlertDialog.vue
+│  │     │  ├─ AlertDialogAction.vue
+│  │     │  ├─ AlertDialogCancel.vue
+│  │     │  ├─ AlertDialogContent.vue
+│  │     │  ├─ AlertDialogDescription.vue
+│  │     │  ├─ AlertDialogFooter.vue
+│  │     │  ├─ AlertDialogHeader.vue
+│  │     │  ├─ AlertDialogTitle.vue
+│  │     │  ├─ AlertDialogTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ aspect-ratio
+│  │     │  ├─ AspectRatio.vue
+│  │     │  └─ index.ts
+│  │     ├─ avatar
+│  │     │  ├─ Avatar.vue
+│  │     │  ├─ AvatarFallback.vue
+│  │     │  ├─ AvatarImage.vue
+│  │     │  └─ index.ts
+│  │     ├─ badge
+│  │     │  ├─ Badge.vue
+│  │     │  └─ index.ts
+│  │     ├─ breadcrumb
+│  │     │  ├─ Breadcrumb.vue
+│  │     │  ├─ BreadcrumbEllipsis.vue
+│  │     │  ├─ BreadcrumbItem.vue
+│  │     │  ├─ BreadcrumbLink.vue
+│  │     │  ├─ BreadcrumbList.vue
+│  │     │  ├─ BreadcrumbPage.vue
+│  │     │  ├─ BreadcrumbSeparator.vue
+│  │     │  └─ index.ts
+│  │     ├─ button
+│  │     │  ├─ Button.vue
+│  │     │  └─ index.ts
+│  │     ├─ button-group
+│  │     │  ├─ ButtonGroup.vue
+│  │     │  ├─ ButtonGroupSeparator.vue
+│  │     │  ├─ ButtonGroupText.vue
+│  │     │  └─ index.ts
+│  │     ├─ calendar
+│  │     │  ├─ Calendar.vue
+│  │     │  ├─ CalendarCell.vue
+│  │     │  ├─ CalendarCellTrigger.vue
+│  │     │  ├─ CalendarGrid.vue
+│  │     │  ├─ CalendarGridBody.vue
+│  │     │  ├─ CalendarGridHead.vue
+│  │     │  ├─ CalendarGridRow.vue
+│  │     │  ├─ CalendarHeadCell.vue
+│  │     │  ├─ CalendarHeader.vue
+│  │     │  ├─ CalendarHeading.vue
+│  │     │  ├─ CalendarNextButton.vue
+│  │     │  ├─ CalendarPrevButton.vue
+│  │     │  └─ index.ts
+│  │     ├─ card
+│  │     │  ├─ Card.vue
+│  │     │  ├─ CardAction.vue
+│  │     │  ├─ CardContent.vue
+│  │     │  ├─ CardDescription.vue
+│  │     │  ├─ CardFooter.vue
+│  │     │  ├─ CardHeader.vue
+│  │     │  ├─ CardTitle.vue
+│  │     │  └─ index.ts
+│  │     ├─ carousel
+│  │     │  ├─ Carousel.vue
+│  │     │  ├─ CarouselContent.vue
+│  │     │  ├─ CarouselItem.vue
+│  │     │  ├─ CarouselNext.vue
+│  │     │  ├─ CarouselPrevious.vue
+│  │     │  ├─ index.ts
+│  │     │  ├─ interface.ts
+│  │     │  └─ useCarousel.ts
+│  │     ├─ chart
+│  │     │  ├─ ChartContainer.vue
+│  │     │  ├─ ChartLegendContent.vue
+│  │     │  ├─ ChartStyle.vue
+│  │     │  ├─ ChartTooltipContent.vue
+│  │     │  ├─ index.ts
+│  │     │  └─ utils.ts
+│  │     ├─ checkbox
+│  │     │  ├─ Checkbox.vue
+│  │     │  └─ index.ts
+│  │     ├─ collapsible
+│  │     │  ├─ Collapsible.vue
+│  │     │  ├─ CollapsibleContent.vue
+│  │     │  ├─ CollapsibleTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ combobox
+│  │     │  ├─ Combobox.vue
+│  │     │  ├─ ComboboxAnchor.vue
+│  │     │  ├─ ComboboxEmpty.vue
+│  │     │  ├─ ComboboxGroup.vue
+│  │     │  ├─ ComboboxInput.vue
+│  │     │  ├─ ComboboxItem.vue
+│  │     │  ├─ ComboboxItemIndicator.vue
+│  │     │  ├─ ComboboxList.vue
+│  │     │  ├─ ComboboxSeparator.vue
+│  │     │  ├─ ComboboxTrigger.vue
+│  │     │  ├─ ComboboxViewport.vue
+│  │     │  └─ index.ts
+│  │     ├─ command
+│  │     │  ├─ Command.vue
+│  │     │  ├─ CommandDialog.vue
+│  │     │  ├─ CommandEmpty.vue
+│  │     │  ├─ CommandGroup.vue
+│  │     │  ├─ CommandInput.vue
+│  │     │  ├─ CommandItem.vue
+│  │     │  ├─ CommandList.vue
+│  │     │  ├─ CommandSeparator.vue
+│  │     │  ├─ CommandShortcut.vue
+│  │     │  └─ index.ts
+│  │     ├─ context-menu
+│  │     │  ├─ ContextMenu.vue
+│  │     │  ├─ ContextMenuCheckboxItem.vue
+│  │     │  ├─ ContextMenuContent.vue
+│  │     │  ├─ ContextMenuGroup.vue
+│  │     │  ├─ ContextMenuItem.vue
+│  │     │  ├─ ContextMenuLabel.vue
+│  │     │  ├─ ContextMenuPortal.vue
+│  │     │  ├─ ContextMenuRadioGroup.vue
+│  │     │  ├─ ContextMenuRadioItem.vue
+│  │     │  ├─ ContextMenuSeparator.vue
+│  │     │  ├─ ContextMenuShortcut.vue
+│  │     │  ├─ ContextMenuSub.vue
+│  │     │  ├─ ContextMenuSubContent.vue
+│  │     │  ├─ ContextMenuSubTrigger.vue
+│  │     │  ├─ ContextMenuTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ dialog
+│  │     │  ├─ Dialog.vue
+│  │     │  ├─ DialogClose.vue
+│  │     │  ├─ DialogContent.vue
+│  │     │  ├─ DialogDescription.vue
+│  │     │  ├─ DialogFooter.vue
+│  │     │  ├─ DialogHeader.vue
+│  │     │  ├─ DialogOverlay.vue
+│  │     │  ├─ DialogScrollContent.vue
+│  │     │  ├─ DialogTitle.vue
+│  │     │  ├─ DialogTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ drawer
+│  │     │  ├─ Drawer.vue
+│  │     │  ├─ DrawerClose.vue
+│  │     │  ├─ DrawerContent.vue
+│  │     │  ├─ DrawerDescription.vue
+│  │     │  ├─ DrawerFooter.vue
+│  │     │  ├─ DrawerHeader.vue
+│  │     │  ├─ DrawerOverlay.vue
+│  │     │  ├─ DrawerTitle.vue
+│  │     │  ├─ DrawerTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ dropdown-menu
+│  │     │  ├─ DropdownMenu.vue
+│  │     │  ├─ DropdownMenuCheckboxItem.vue
+│  │     │  ├─ DropdownMenuContent.vue
+│  │     │  ├─ DropdownMenuGroup.vue
+│  │     │  ├─ DropdownMenuItem.vue
+│  │     │  ├─ DropdownMenuLabel.vue
+│  │     │  ├─ DropdownMenuRadioGroup.vue
+│  │     │  ├─ DropdownMenuRadioItem.vue
+│  │     │  ├─ DropdownMenuSeparator.vue
+│  │     │  ├─ DropdownMenuShortcut.vue
+│  │     │  ├─ DropdownMenuSub.vue
+│  │     │  ├─ DropdownMenuSubContent.vue
+│  │     │  ├─ DropdownMenuSubTrigger.vue
+│  │     │  ├─ DropdownMenuTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ empty
+│  │     │  ├─ Empty.vue
+│  │     │  ├─ EmptyContent.vue
+│  │     │  ├─ EmptyDescription.vue
+│  │     │  ├─ EmptyHeader.vue
+│  │     │  ├─ EmptyMedia.vue
+│  │     │  ├─ EmptyTitle.vue
+│  │     │  └─ index.ts
+│  │     ├─ field
+│  │     │  ├─ Field.vue
+│  │     │  ├─ FieldContent.vue
+│  │     │  ├─ FieldDescription.vue
+│  │     │  ├─ FieldError.vue
+│  │     │  ├─ FieldGroup.vue
+│  │     │  ├─ FieldLabel.vue
+│  │     │  ├─ FieldLegend.vue
+│  │     │  ├─ FieldSeparator.vue
+│  │     │  ├─ FieldSet.vue
+│  │     │  ├─ FieldTitle.vue
+│  │     │  └─ index.ts
+│  │     ├─ form
+│  │     │  ├─ FormControl.vue
+│  │     │  ├─ FormDescription.vue
+│  │     │  ├─ FormItem.vue
+│  │     │  ├─ FormLabel.vue
+│  │     │  ├─ FormMessage.vue
+│  │     │  ├─ index.ts
+│  │     │  ├─ injectionKeys.ts
+│  │     │  └─ useFormField.ts
+│  │     ├─ hover-card
+│  │     │  ├─ HoverCard.vue
+│  │     │  ├─ HoverCardContent.vue
+│  │     │  ├─ HoverCardTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ input
+│  │     │  ├─ Input.vue
+│  │     │  └─ index.ts
+│  │     ├─ input-group
+│  │     │  ├─ InputGroup.vue
+│  │     │  ├─ InputGroupAddon.vue
+│  │     │  ├─ InputGroupButton.vue
+│  │     │  ├─ InputGroupInput.vue
+│  │     │  ├─ InputGroupText.vue
+│  │     │  ├─ InputGroupTextarea.vue
+│  │     │  └─ index.ts
+│  │     ├─ input-otp
+│  │     │  ├─ InputOTP.vue
+│  │     │  ├─ InputOTPGroup.vue
+│  │     │  ├─ InputOTPSeparator.vue
+│  │     │  ├─ InputOTPSlot.vue
+│  │     │  └─ index.ts
+│  │     ├─ item
+│  │     │  ├─ Item.vue
+│  │     │  ├─ ItemActions.vue
+│  │     │  ├─ ItemContent.vue
+│  │     │  ├─ ItemDescription.vue
+│  │     │  ├─ ItemFooter.vue
+│  │     │  ├─ ItemGroup.vue
+│  │     │  ├─ ItemHeader.vue
+│  │     │  ├─ ItemMedia.vue
+│  │     │  ├─ ItemSeparator.vue
+│  │     │  ├─ ItemTitle.vue
+│  │     │  └─ index.ts
+│  │     ├─ kbd
+│  │     │  ├─ Kbd.vue
+│  │     │  ├─ KbdGroup.vue
+│  │     │  └─ index.ts
+│  │     ├─ label
+│  │     │  ├─ Label.vue
+│  │     │  └─ index.ts
+│  │     ├─ menubar
+│  │     │  ├─ Menubar.vue
+│  │     │  ├─ MenubarCheckboxItem.vue
+│  │     │  ├─ MenubarContent.vue
+│  │     │  ├─ MenubarGroup.vue
+│  │     │  ├─ MenubarItem.vue
+│  │     │  ├─ MenubarLabel.vue
+│  │     │  ├─ MenubarMenu.vue
+│  │     │  ├─ MenubarRadioGroup.vue
+│  │     │  ├─ MenubarRadioItem.vue
+│  │     │  ├─ MenubarSeparator.vue
+│  │     │  ├─ MenubarShortcut.vue
+│  │     │  ├─ MenubarSub.vue
+│  │     │  ├─ MenubarSubContent.vue
+│  │     │  ├─ MenubarSubTrigger.vue
+│  │     │  ├─ MenubarTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ native-select
+│  │     │  ├─ NativeSelect.vue
+│  │     │  ├─ NativeSelectOptGroup.vue
+│  │     │  ├─ NativeSelectOption.vue
+│  │     │  └─ index.ts
+│  │     ├─ navigation-menu
+│  │     │  ├─ NavigationMenu.vue
+│  │     │  ├─ NavigationMenuContent.vue
+│  │     │  ├─ NavigationMenuIndicator.vue
+│  │     │  ├─ NavigationMenuItem.vue
+│  │     │  ├─ NavigationMenuLink.vue
+│  │     │  ├─ NavigationMenuList.vue
+│  │     │  ├─ NavigationMenuTrigger.vue
+│  │     │  ├─ NavigationMenuViewport.vue
+│  │     │  └─ index.ts
+│  │     ├─ number-field
+│  │     │  ├─ NumberField.vue
+│  │     │  ├─ NumberFieldContent.vue
+│  │     │  ├─ NumberFieldDecrement.vue
+│  │     │  ├─ NumberFieldIncrement.vue
+│  │     │  ├─ NumberFieldInput.vue
+│  │     │  └─ index.ts
+│  │     ├─ pagination
+│  │     │  ├─ Pagination.vue
+│  │     │  ├─ PaginationContent.vue
+│  │     │  ├─ PaginationEllipsis.vue
+│  │     │  ├─ PaginationFirst.vue
+│  │     │  ├─ PaginationItem.vue
+│  │     │  ├─ PaginationLast.vue
+│  │     │  ├─ PaginationNext.vue
+│  │     │  ├─ PaginationPrevious.vue
+│  │     │  └─ index.ts
+│  │     ├─ pin-input
+│  │     │  ├─ PinInput.vue
+│  │     │  ├─ PinInputGroup.vue
+│  │     │  ├─ PinInputSeparator.vue
+│  │     │  ├─ PinInputSlot.vue
+│  │     │  └─ index.ts
+│  │     ├─ popover
+│  │     │  ├─ Popover.vue
+│  │     │  ├─ PopoverAnchor.vue
+│  │     │  ├─ PopoverContent.vue
+│  │     │  ├─ PopoverTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ progress
+│  │     │  ├─ Progress.vue
+│  │     │  └─ index.ts
+│  │     ├─ radio-group
+│  │     │  ├─ RadioGroup.vue
+│  │     │  ├─ RadioGroupItem.vue
+│  │     │  └─ index.ts
+│  │     ├─ range-calendar
+│  │     │  ├─ RangeCalendar.vue
+│  │     │  ├─ RangeCalendarCell.vue
+│  │     │  ├─ RangeCalendarCellTrigger.vue
+│  │     │  ├─ RangeCalendarGrid.vue
+│  │     │  ├─ RangeCalendarGridBody.vue
+│  │     │  ├─ RangeCalendarGridHead.vue
+│  │     │  ├─ RangeCalendarGridRow.vue
+│  │     │  ├─ RangeCalendarHeadCell.vue
+│  │     │  ├─ RangeCalendarHeader.vue
+│  │     │  ├─ RangeCalendarHeading.vue
+│  │     │  ├─ RangeCalendarNextButton.vue
+│  │     │  ├─ RangeCalendarPrevButton.vue
+│  │     │  └─ index.ts
+│  │     ├─ resizable
+│  │     │  ├─ ResizableHandle.vue
+│  │     │  ├─ ResizablePanel.vue
+│  │     │  ├─ ResizablePanelGroup.vue
+│  │     │  └─ index.ts
+│  │     ├─ scroll-area
+│  │     │  ├─ ScrollArea.vue
+│  │     │  ├─ ScrollBar.vue
+│  │     │  └─ index.ts
+│  │     ├─ select
+│  │     │  ├─ Select.vue
+│  │     │  ├─ SelectContent.vue
+│  │     │  ├─ SelectGroup.vue
+│  │     │  ├─ SelectItem.vue
+│  │     │  ├─ SelectItemText.vue
+│  │     │  ├─ SelectLabel.vue
+│  │     │  ├─ SelectScrollDownButton.vue
+│  │     │  ├─ SelectScrollUpButton.vue
+│  │     │  ├─ SelectSeparator.vue
+│  │     │  ├─ SelectTrigger.vue
+│  │     │  ├─ SelectValue.vue
+│  │     │  └─ index.ts
+│  │     ├─ separator
+│  │     │  ├─ Separator.vue
+│  │     │  └─ index.ts
+│  │     ├─ sheet
+│  │     │  ├─ Sheet.vue
+│  │     │  ├─ SheetClose.vue
+│  │     │  ├─ SheetContent.vue
+│  │     │  ├─ SheetDescription.vue
+│  │     │  ├─ SheetFooter.vue
+│  │     │  ├─ SheetHeader.vue
+│  │     │  ├─ SheetOverlay.vue
+│  │     │  ├─ SheetTitle.vue
+│  │     │  ├─ SheetTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ sidebar
+│  │     │  ├─ Sidebar.vue
+│  │     │  ├─ SidebarContent.vue
+│  │     │  ├─ SidebarFooter.vue
+│  │     │  ├─ SidebarGroup.vue
+│  │     │  ├─ SidebarGroupAction.vue
+│  │     │  ├─ SidebarGroupContent.vue
+│  │     │  ├─ SidebarGroupLabel.vue
+│  │     │  ├─ SidebarHeader.vue
+│  │     │  ├─ SidebarInput.vue
+│  │     │  ├─ SidebarInset.vue
+│  │     │  ├─ SidebarMenu.vue
+│  │     │  ├─ SidebarMenuAction.vue
+│  │     │  ├─ SidebarMenuBadge.vue
+│  │     │  ├─ SidebarMenuButton.vue
+│  │     │  ├─ SidebarMenuButtonChild.vue
+│  │     │  ├─ SidebarMenuItem.vue
+│  │     │  ├─ SidebarMenuSkeleton.vue
+│  │     │  ├─ SidebarMenuSub.vue
+│  │     │  ├─ SidebarMenuSubButton.vue
+│  │     │  ├─ SidebarMenuSubItem.vue
+│  │     │  ├─ SidebarProvider.vue
+│  │     │  ├─ SidebarRail.vue
+│  │     │  ├─ SidebarSeparator.vue
+│  │     │  ├─ SidebarTrigger.vue
+│  │     │  ├─ index.ts
+│  │     │  └─ utils.ts
+│  │     ├─ skeleton
+│  │     │  ├─ Skeleton.vue
+│  │     │  └─ index.ts
+│  │     ├─ slider
+│  │     │  ├─ Slider.vue
+│  │     │  └─ index.ts
+│  │     ├─ sonner
+│  │     │  ├─ Sonner.vue
+│  │     │  └─ index.ts
+│  │     ├─ spinner
+│  │     │  ├─ Spinner.vue
+│  │     │  └─ index.ts
+│  │     ├─ stepper
+│  │     │  ├─ Stepper.vue
+│  │     │  ├─ StepperDescription.vue
+│  │     │  ├─ StepperIndicator.vue
+│  │     │  ├─ StepperItem.vue
+│  │     │  ├─ StepperSeparator.vue
+│  │     │  ├─ StepperTitle.vue
+│  │     │  ├─ StepperTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ switch
+│  │     │  ├─ Switch.vue
+│  │     │  └─ index.ts
+│  │     ├─ table
+│  │     │  ├─ Table.vue
+│  │     │  ├─ TableBody.vue
+│  │     │  ├─ TableCaption.vue
+│  │     │  ├─ TableCell.vue
+│  │     │  ├─ TableEmpty.vue
+│  │     │  ├─ TableFooter.vue
+│  │     │  ├─ TableHead.vue
+│  │     │  ├─ TableHeader.vue
+│  │     │  ├─ TableRow.vue
+│  │     │  ├─ index.ts
+│  │     │  └─ utils.ts
+│  │     ├─ tabs
+│  │     │  ├─ Tabs.vue
+│  │     │  ├─ TabsContent.vue
+│  │     │  ├─ TabsList.vue
+│  │     │  ├─ TabsTrigger.vue
+│  │     │  └─ index.ts
+│  │     ├─ tags-input
+│  │     │  ├─ TagsInput.vue
+│  │     │  ├─ TagsInputInput.vue
+│  │     │  ├─ TagsInputItem.vue
+│  │     │  ├─ TagsInputItemDelete.vue
+│  │     │  ├─ TagsInputItemText.vue
+│  │     │  └─ index.ts
+│  │     ├─ textarea
+│  │     │  ├─ Textarea.vue
+│  │     │  └─ index.ts
+│  │     ├─ toggle
+│  │     │  ├─ Toggle.vue
+│  │     │  └─ index.ts
+│  │     ├─ toggle-group
+│  │     │  ├─ ToggleGroup.vue
+│  │     │  ├─ ToggleGroupItem.vue
+│  │     │  └─ index.ts
+│  │     └─ tooltip
+│  │        ├─ Tooltip.vue
+│  │        ├─ TooltipContent.vue
+│  │        ├─ TooltipProvider.vue
+│  │        ├─ TooltipTrigger.vue
+│  │        └─ index.ts
+│  ├─ lib
+│  │  └─ utils.ts
+│  ├─ pages
+│  │  └─ index.vue
+│  └─ plugins
+│     └─ ssr-width.ts
+├─ bun.lock
+├─ components.json
+├─ eslint.config.mjs
+├─ netlify.toml
+├─ nuxt.config.ts
+├─ package.json
+├─ playwright.config.ts
+├─ public
+│  ├─ favicon.ico
+│  └─ robots.txt
+├─ test
+│  ├─ e2e
+│  │  └─ example.spec.ts
+│  ├─ nuxt
+│  │  └─ component.test.ts
+│  └─ unit
+│     └─ example.test.ts
+├─ tsconfig.json
+└─ vitest.config.ts
+
+```

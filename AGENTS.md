@@ -33,34 +33,76 @@ This is a full-stack web application built with modern technologies:
 
 ```
 project-root/
-├── .nuxt/                    # Nuxt build output (generated)
-├── .output/                  # Production build output
-├── components/               # Vue components
-│   └── ui/                  # shadcn-vue components
-├── composables/             # Vue composables
-├── layouts/                 # Nuxt layouts
-├── middleware/              # Route middleware
-├── pages/                   # File-based routing
-├── plugins/                 # Nuxt plugins
-├── public/                  # Static assets
-├── server/                  # Server-side code
-│   ├── api/                # API endpoints
-│   ├── middleware/         # Server middleware
-│   ├── routes/             # Server routes
-│   ├── utils/              # Server utilities
-│   └── db/                 # Database configuration
-│       ├── schema.ts       # Drizzle schema definitions
-│       └── index.ts        # Database connection
-├── shared/                  # Shared code (client + server)
-│   ├── utils/              # Auto-imported utilities
-│   └── types/              # Auto-imported types
-├── utils/                   # Client utilities
-├── .env                     # Environment variables
-├── bun.lockb               # Bun lockfile
-├── nuxt.config.ts          # Nuxt configuration
-├── tailwind.config.js      # Tailwind configuration
-├── drizzle.config.ts       # Drizzle configuration
-└── tsconfig.json           # TypeScript configuration
+├── .agent/                      # Folder untuk instruksi, aturan (.agent/rules), dan workflow agen AI
+├── .netlify/                    # Konfigurasi internal Netlify (seperti edge-functions)
+├── .nuxt/                       # File temporary hasil build engine Nuxt (auto-generated)
+├── .output/                     # Hasil build final untuk produksi dan deployment
+├── app/                         # Direktori utama source code aplikasi (Nuxt 4 structure)
+│   ├── assets/                  # Aset aplikasi (global CSS, images, fonts, dll)
+│   │   └── css/main.css         # Entry point styling Tailwind CSS
+│   ├── components/              # Komponen Vue yang dapat digunakan kembali
+│   │   └── ui/                  # Komponen UI shadcn-vue (hanya nama folder)
+│   │       ├── accordion/       ├── alert/            ├── alert-dialog/
+│   │       ├── aspect-ratio/    ├── avatar/           ├── badge/
+│   │       ├── breadcrumb/      ├── button/           ├── button-group/
+│   │       ├── calendar/        ├── card/             ├── carousel/
+│   │       ├── chart/           ├── checkbox/         ├── collapsible/
+│   │       ├── combobox/        ├── command/          ├── context-menu/
+│   │       ├── dialog/          ├── drawer/           ├── dropdown-menu/
+│   │       ├── empty/           ├── field/            ├── form/
+│   │       ├── hover-card/      ├── input/            ├── input-group/
+│   │       ├── input-otp/       ├── item/             ├── kbd/
+│   │       ├── label/           ├── menubar/          ├── native-select/
+│   │       ├── navigation-menu/ ├── number-field/     ├── pagination/
+│   │       ├── pin-input/       ├── popover/          ├── progress/
+│   │       ├── radio-group/     ├── range-calendar/   ├── resizable/
+│   │       ├── scroll-area/     ├── select/           ├── separator/
+│   │       ├── sheet/           ├── sidebar/          ├── skeleton/
+│   │       ├── slider/          ├── sonner/           ├── spinner/
+│   │       ├── stepper/         ├── switch/           ├── table/
+│   │       ├── tabs/            ├── tags-input/       ├── textarea/
+│   │       ├── toggle/          ├── toggle-group/     ├── tooltip/
+│   ├── composables/             # Vue composables untuk reusable logic (State/Logic)
+│   ├── layouts/                 # Layout dasar aplikasi Nuxt
+│   ├── middleware/              # Route middleware untuk proteksi halaman (client-side)
+│   ├── pages/                   # File-based routing (setiap file .vue menjadi route)
+│   ├── plugins/                 # Plugin Nuxt (seperti ssr-width.ts)
+│   ├── utils/                   # Fungsi utilitas aplikasi (auto-imported)
+│   ├── app.config.ts            # Reactive application configuration
+│   ├── app.vue                  # Komponen root aplikasi Vue
+│   └── error.vue                # Halaman error custom Nuxt
+├── public/                      # File statis yang diakses langsung (favicon.ico, robots.txt)
+├── server/                      # Direktori backend/server-side (Nitro engine)
+│   ├── api/                     # Endpoint API server
+│   ├── db/                      # Konfigurasi database, skema, dan migrasi (Drizzle)
+│   ├── middleware/              # Middleware khusus server-side
+│   ├── plugins/                 # Nitro server plugins
+│   ├── routes/                  # Custom server routes
+│   └── utils/                   # Helper functions khusus server-side
+├── shared/                      # Kode yang dibagikan secara universal (Client & Server)
+│   ├── types/                   # Definisi tipe TypeScript global
+│   └── utils/                   # Fungsi utilitas framework-agnostic
+├── test/                        # Kumpulan file pengujian (Unit, E2E, Integration)
+│   ├── e2e/                     # End-to-end tests (Playwright)
+│   ├── nuxt/                    # Nuxt-specific tests
+│   └── unit/                    # Unit tests (Vitest)
+├── .env                         # Konfigurasi variabel lingkungan (secret keys)
+├── .nuxtrc                      # Konfigurasi runtime Nuxt
+├── .nuxtignore                  # Daftar file/folder yang diabaikan saat build Nuxt
+├── .prettierignore              # Daftar file/folder yang diabaikan oleh Prettier
+├── .prettierrc                  # Konfigurasi code formatter Prettier
+├── AGENTS.md                    # Dokumentasi panduan untuk AI Agent (file ini)
+├── README.md                    # Dokumentasi utama proyek untuk manusia
+├── bun.lock                     # Lockfile untuk dependensi Bun runtime
+├── components.json              # Konfigurasi framework shadcn-vue
+├── drizzle.config.ts            # Konfigurasi Drizzle ORM
+├── eslint.config.mjs            # Konfigurasi linting ESLint
+├── netlify.toml                 # Konfigurasi deployment ke Netlify
+├── nuxt.config.ts               # File konfigurasi utama framework Nuxt
+├── package.json                 # Definisi proyek, script, dan daftar dependensi
+├── playwright.config.ts         # Konfigurasi framework E2E Playwright
+├── tsconfig.json                # Konfigurasi compiler TypeScript
+└── vitest.config.ts             # Konfigurasi framework testing Vitest
 ```
 
 ## Key Files and Their Purpose
@@ -337,7 +379,7 @@ FROM oven/bun:1 as base
 WORKDIR /app
 
 # Install dependencies
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 # Build
