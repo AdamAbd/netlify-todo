@@ -137,11 +137,11 @@
             <InputGroupInput
               id="form-register-name"
               :model-value="field.value"
-              @update:model-value="field.onChange"
               type="text"
               placeholder="John Doe"
               :disabled="isSubmitting"
               autocomplete="name"
+              @update:model-value="field.onChange"
             />
             <InputGroupAddon>
               <UserIcon />
@@ -159,11 +159,11 @@
             <InputGroupInput
               id="form-register-email"
               :model-value="field.value"
-              @update:model-value="field.onChange"
               type="email"
               placeholder="name@example.com"
               :disabled="isSubmitting"
               autocomplete="email"
+              @update:model-value="field.onChange"
             />
             <InputGroupAddon>
               <MailIcon />
@@ -181,11 +181,11 @@
             <InputGroupInput
               id="form-register-password"
               :model-value="field.value"
-              @update:model-value="field.onChange"
               :type="showPassword ? 'text' : 'password'"
               placeholder="Create a strong password"
               :disabled="isSubmitting"
               autocomplete="new-password"
+              @update:model-value="field.onChange"
             />
             <InputGroupAddon align="inline-end">
               <InputGroupButton type="button" size="icon-xs" @click="showPassword = !showPassword">
@@ -220,11 +220,11 @@
             <InputGroupInput
               id="form-register-confirm-password"
               :model-value="field.value"
-              @update:model-value="field.onChange"
               :type="showConfirmPassword ? 'text' : 'password'"
               placeholder="Confirm your password"
               :disabled="isSubmitting"
               autocomplete="new-password"
+              @update:model-value="field.onChange"
             />
             <InputGroupAddon align="inline-end">
               <InputGroupButton
