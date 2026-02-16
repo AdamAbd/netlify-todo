@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, LockIcon, UserIcon } from 'lucide-vue-next'
+  import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, UserIcon } from 'lucide-vue-next'
   import { toTypedSchema } from '@vee-validate/zod'
   import { useForm, Field as VeeField } from 'vee-validate'
   import * as z from 'zod'
@@ -21,8 +21,7 @@
     ],
   })
 
-  const { register, loginWithGoogle } = useAuth()
-  const router = useRouter()
+  const { loginWithGoogle } = useAuth()
 
   const registerSchema = toTypedSchema(
     z
@@ -68,10 +67,10 @@
           callbackURL: '/home', // A URL to redirect to after the user verifies their email (optional)
         },
         {
-          onRequest: (ctx) => {
+          onRequest: (_ctx) => {
             //show loading
           },
-          onSuccess: (ctx) => {
+          onSuccess: (_ctx) => {
             toast.success('Account created successfully')
             navigateTo('/home')
             //redirect to the dashboard or sign in page
