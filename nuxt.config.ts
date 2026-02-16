@@ -17,7 +17,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
   ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [(tailwindcss as any)()],
   },
   shadcn: {
     /**
