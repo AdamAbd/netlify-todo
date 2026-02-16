@@ -507,10 +507,24 @@ netlify-todo
 │  │        ├─ TooltipProvider.vue
 │  │        ├─ TooltipTrigger.vue
 │  │        └─ index.ts
+│  ├─ composables
+│  │  ├─ useAuth.ts
+│  │  └─ useTodos.ts
+│  ├─ layouts
+│  │  ├─ auth.vue
+│  │  └─ default.vue
 │  ├─ lib
 │  │  └─ utils.ts
+│  ├─ middleware
+│  │  ├─ auth.ts
+│  │  └─ guest.ts
 │  ├─ pages
-│  │  └─ index.vue
+│  │  ├─ forgot-password.vue
+│  │  ├─ home.vue
+│  │  ├─ index.vue
+│  │  ├─ login.vue
+│  │  ├─ register.vue
+│  │  └─ reset-password.vue
 │  └─ plugins
 │     └─ ssr-width.ts
 ├─ bun.lock
