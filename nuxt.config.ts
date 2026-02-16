@@ -1,3 +1,5 @@
+import tailwindcss from '@tailwindcss/vite'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -5,5 +7,30 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'netlify-edge',
   },
-  modules: ['@nuxt/eslint', '@nuxt/hints', '@nuxt/image', '@nuxt/test-utils/module'],
+  css: ['@/assets/css/main.css'],
+  modules: [
+    '@nuxt/eslint',
+    '@nuxt/hints',
+    '@nuxt/image',
+    '@nuxt/test-utils/module',
+    'shadcn-nuxt',
+    '@vueuse/nuxt',
+  ],
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  shadcn: {
+    /**
+     * Prefix for all the imported component.
+     * @default "Ui"
+     */
+    prefix: '',
+    /**
+     * Directory that the component lives in.
+     * Will respect the Nuxt aliases.
+     * @link https://nuxt.com/docs/api/nuxt-config#alias
+     * @default "@/components/ui"
+     */
+    componentDir: '@/components/ui',
+  },
 })
