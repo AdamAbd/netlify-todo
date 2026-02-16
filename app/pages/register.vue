@@ -21,8 +21,6 @@
     ],
   })
 
-  const { loginWithGoogle } = useAuth()
-
   const registerSchema = toTypedSchema(
     z
       .object({
@@ -90,7 +88,7 @@
   })
 
   const handleGoogleLogin = () => {
-    loginWithGoogle()
+    // TODO: Implement google login with better-auth
   }
 </script>
 

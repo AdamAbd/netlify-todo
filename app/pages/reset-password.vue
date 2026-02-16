@@ -18,9 +18,7 @@
     meta: [{ name: 'description', content: 'Set a new password for your Todoist account.' }],
   })
 
-  const { resetPassword } = useAuth()
   const route = useRoute()
-  const router = useRouter()
 
   const token = computed(() => (route.query.token as string) || '')
 
@@ -57,13 +55,7 @@
 
     isSubmitting.value = true
 
-    const result = await resetPassword(token.value, form.password)
-
-    if (result.success) {
-      isSuccess.value = true
-    } else {
-      errorMessage.value = result.error || 'Failed to reset password.'
-    }
+    // TODO: Implement reset password with better-auth
 
     isSubmitting.value = false
   }

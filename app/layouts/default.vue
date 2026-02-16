@@ -1,13 +1,17 @@
 <script setup lang="ts">
   import { LayoutDashboardIcon, LogOutIcon, MoonIcon, SunIcon, UserIcon } from 'lucide-vue-next'
+  import { authClient } from '~/lib/auth-client'
 
-  const { user, logout } = useAuth()
   const isDark = useDark()
   const toggleTheme = useToggle(isDark)
   const router = useRouter()
 
+  const session = authClient.useSession()
+
+  const user = computed(() => session.value?.data?.user)
+
   const handleLogout = async () => {
-    await logout()
+    await authClient.signOut()
     router.push('/login')
   }
 </script>
