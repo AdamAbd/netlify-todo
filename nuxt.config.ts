@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     '/register': { prerender: true },
     '/forgot-password': { prerender: true },
     '/reset-password': { prerender: true },
-    '/home': { isr: true },
+    '/home': { ssr: false },
   },
   css: ['@/assets/css/main.css'],
   modules: [
