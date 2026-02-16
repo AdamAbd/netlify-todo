@@ -1,8 +1,10 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const { isAuthenticated, isLoading } = useAuth()
+import { authClient } from '@/lib/auth-client'
 
-  // Redirect to login while auth state is loading or user is not authenticated
-  if (isLoading.value || !isAuthenticated.value) {
-    return navigateTo('/login', { replace: true })
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { data: session } = await authClient.useSession(useFetch)
+  if (!session.value) {
+    if (to.path !== '/login') {
+      return navigateTo('/login')
+    }
   }
 })
