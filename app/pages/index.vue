@@ -296,6 +296,7 @@
               target="_blank"
               rel="noopener"
               class="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Visit our GitHub repository"
             >
               <GithubIcon class="size-5" />
             </a>
