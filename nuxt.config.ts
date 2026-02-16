@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     '/register': { prerender: true },
     '/forgot-password': { prerender: true },
     '/reset-password': { prerender: true },
-    '/home': { isr: true },
+    '/home': { ssr: false },
   },
   css: ['@/assets/css/main.css'],
   modules: [
@@ -40,5 +40,10 @@ export default defineNuxtConfig({
      * @default "@/components/ui"
      */
     componentDir: '@/components/ui',
+  },
+  runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL,
+    betterAuthSecret: process.env.BETTER_AUTH_SECRET,
+    betterAuthUrl: process.env.BETTER_AUTH_URL,
   },
 })
