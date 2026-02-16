@@ -83,8 +83,8 @@
           },
         }
       )
-    } catch (error) {
-      errorMessage.value = error.message
+    } catch (error: any) {
+      errorMessage.value = error.message || 'An unexpected error occurred'
     } finally {
       isSubmitting.value = false
     }
