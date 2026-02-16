@@ -1,5 +1,10 @@
 <script setup lang="ts">
   import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, LockIcon, UserIcon } from 'lucide-vue-next'
+  import { toTypedSchema } from '@vee-validate/zod'
+  import { useForm, Field as VeeField } from 'vee-validate'
+  import * as z from 'zod'
+  import { authClient } from '@/lib/auth-client'
+  import { toast } from 'vue-sonner'
 
   definePageMeta({
     layout: 'auth',
@@ -19,45 +24,71 @@
   const { register, loginWithGoogle } = useAuth()
   const router = useRouter()
 
-  const form = reactive({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+  const registerSchema = toTypedSchema(
+    z
+      .object({
+        name: z.string().min(2, 'Name must be at least 2 characters'),
+        email: z.string().email('Invalid email address'),
+        password: z.string().min(8, 'Password must be at least 8 characters'),
+        confirmPassword: z.string(),
+      })
+      .refine((data) => data.password === data.confirmPassword, {
+        message: 'Passwords do not match',
+        path: ['confirmPassword'],
+      })
+  )
+
+  const { handleSubmit, values } = useForm({
+    validationSchema: registerSchema,
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   })
+
   const showPassword = ref(false)
   const showConfirmPassword = ref(false)
   const isSubmitting = ref(false)
   const errorMessage = ref('')
 
-  const passwordsMatch = computed(() => form.password === form.confirmPassword)
-  const passwordStrength = usePasswordStrength(() => form.password)
+  const passwordStrength = usePasswordStrength(() => values.password || '')
 
-  const handleSubmit = async () => {
+  const onSubmit = handleSubmit(async (values) => {
     errorMessage.value = ''
-
-    if (!passwordsMatch.value) {
-      errorMessage.value = 'Passwords do not match.'
-      return
-    }
-
-    if (form.password.length < 8) {
-      errorMessage.value = 'Password must be at least 8 characters.'
-      return
-    }
-
     isSubmitting.value = true
 
-    const result = await register(form.name, form.email, form.password)
-
-    if (result.success) {
-      router.push('/home')
-    } else {
-      errorMessage.value = result.error || 'Registration failed.'
+    try {
+      await authClient.signUp.email(
+        {
+          email: values.email, // user email address
+          password: values.password, // user password -> min 8 characters by default
+          name: values.name, // user display name
+          callbackURL: '/home', // A URL to redirect to after the user verifies their email (optional)
+        },
+        {
+          onRequest: (ctx) => {
+            //show loading
+          },
+          onSuccess: (ctx) => {
+            toast.success('Account created successfully')
+            navigateTo('/home')
+            //redirect to the dashboard or sign in page
+          },
+          onError: (ctx) => {
+            // display the error message
+            errorMessage.value = ctx.error.message
+            toast.error(ctx.error.message)
+          },
+        }
+      )
+    } catch (error: any) {
+      errorMessage.value = error.message || 'An unexpected error occurred'
+    } finally {
+      isSubmitting.value = false
     }
-
-    isSubmitting.value = false
-  }
+  })
 
   const handleGoogleLogin = () => {
     loginWithGoogle()
@@ -97,107 +128,121 @@
     </div>
 
     <!-- Register Form -->
-    <form class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="form-register" class="space-y-4" @submit="onSubmit">
       <!-- Name -->
-      <div class="space-y-2">
-        <Label for="name">Full Name</Label>
-        <div class="relative">
-          <UserIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="name"
-            v-model="form.name"
-            type="text"
-            placeholder="John Doe"
-            required
-            class="pl-10"
-          />
-        </div>
-      </div>
+      <VeeField v-slot="{ field, errors }" name="name">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="form-register-name">Full Name</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="form-register-name"
+              :model-value="field.value"
+              type="text"
+              placeholder="John Doe"
+              :disabled="isSubmitting"
+              autocomplete="name"
+              @update:model-value="field.onChange"
+            />
+            <InputGroupAddon>
+              <UserIcon />
+            </InputGroupAddon>
+          </InputGroup>
+          <FieldError v-if="errors.length" :errors="errors" />
+        </Field>
+      </VeeField>
 
       <!-- Email -->
-      <div class="space-y-2">
-        <Label for="email">Email</Label>
-        <div class="relative">
-          <MailIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="email"
-            v-model="form.email"
-            type="email"
-            placeholder="name@example.com"
-            required
-            class="pl-10"
-          />
-        </div>
-      </div>
+      <VeeField v-slot="{ field, errors }" name="email">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="form-register-email">Email</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="form-register-email"
+              :model-value="field.value"
+              type="email"
+              placeholder="name@example.com"
+              :disabled="isSubmitting"
+              autocomplete="email"
+              @update:model-value="field.onChange"
+            />
+            <InputGroupAddon>
+              <MailIcon />
+            </InputGroupAddon>
+          </InputGroup>
+          <FieldError v-if="errors.length" :errors="errors" />
+        </Field>
+      </VeeField>
 
       <!-- Password -->
-      <div class="space-y-2">
-        <Label for="password">Password</Label>
-        <div class="relative">
-          <LockIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="password"
-            v-model="form.password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="Create a strong password"
-            required
-            class="pr-10 pl-10"
-          />
-          <button
-            type="button"
-            class="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-            @click="showPassword = !showPassword"
-          >
-            <EyeOffIcon v-if="showPassword" class="size-4" />
-            <EyeIcon v-else class="size-4" />
-          </button>
-        </div>
-        <!-- Password strength indicator -->
-        <div v-if="form.password" class="space-y-1.5">
-          <div class="flex gap-1">
-            <div
-              v-for="i in 4"
-              :key="i"
-              class="h-1 flex-1 rounded-full transition-colors duration-300"
-              :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-muted'"
+      <VeeField v-slot="{ field, errors }" name="password">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="form-register-password">Password</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="form-register-password"
+              :model-value="field.value"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Create a strong password"
+              :disabled="isSubmitting"
+              autocomplete="new-password"
+              @update:model-value="field.onChange"
             />
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton type="button" size="icon-xs" @click="showPassword = !showPassword">
+                <EyeOffIcon v-if="showPassword" class="size-4" />
+                <EyeIcon v-else class="size-4" />
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+          <!-- Password strength indicator -->
+          <div v-if="values.password" class="space-y-1.5 pt-2">
+            <div class="flex gap-1">
+              <div
+                v-for="i in 4"
+                :key="i"
+                class="h-1 flex-1 rounded-full transition-colors duration-300"
+                :class="i <= passwordStrength.score ? passwordStrength.color : 'bg-muted'"
+              />
+            </div>
+            <p class="text-muted-foreground text-xs">
+              Password strength: <span class="font-medium">{{ passwordStrength.label }}</span>
+            </p>
           </div>
-          <p class="text-muted-foreground text-xs">
-            Password strength: <span class="font-medium">{{ passwordStrength.label }}</span>
-          </p>
-        </div>
-      </div>
+          <FieldError v-if="errors.length" :errors="errors" />
+        </Field>
+      </VeeField>
 
       <!-- Confirm Password -->
-      <div class="space-y-2">
-        <Label for="confirmPassword">Confirm Password</Label>
-        <div class="relative">
-          <LockIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="confirmPassword"
-            v-model="form.confirmPassword"
-            :type="showConfirmPassword ? 'text' : 'password'"
-            placeholder="Confirm your password"
-            required
-            class="pr-10 pl-10"
-            :class="form.confirmPassword && !passwordsMatch ? 'border-destructive' : ''"
-          />
-          <button
-            type="button"
-            class="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-            @click="showConfirmPassword = !showConfirmPassword"
-          >
-            <EyeOffIcon v-if="showConfirmPassword" class="size-4" />
-            <EyeIcon v-else class="size-4" />
-          </button>
-        </div>
-        <p v-if="form.confirmPassword && !passwordsMatch" class="text-destructive text-xs">
-          Passwords do not match
-        </p>
-      </div>
+      <VeeField v-slot="{ field, errors }" name="confirmPassword">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="form-register-confirm-password">Confirm Password</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="form-register-confirm-password"
+              :model-value="field.value"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirm your password"
+              :disabled="isSubmitting"
+              autocomplete="new-password"
+              @update:model-value="field.onChange"
+            />
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                type="button"
+                size="icon-xs"
+                @click="showConfirmPassword = !showConfirmPassword"
+              >
+                <EyeOffIcon v-if="showConfirmPassword" class="size-4" />
+                <EyeIcon v-else class="size-4" />
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+          <FieldError v-if="errors.length" :errors="errors" />
+        </Field>
+      </VeeField>
 
       <!-- Submit -->
-      <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting || !passwordsMatch">
+      <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting">
         <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />
         {{ isSubmitting ? 'Creating account...' : 'Create account' }}
       </Button>

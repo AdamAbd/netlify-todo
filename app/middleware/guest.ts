@@ -1,7 +1,10 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const { isAuthenticated } = useAuth()
+import { authClient } from '@/lib/auth-client'
 
-  if (isAuthenticated.value) {
-    return navigateTo('/home', { replace: true })
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { data: session } = await authClient.useSession(useFetch)
+  if (session.value) {
+    if (to.path !== '/home') {
+      return navigateTo('/home')
+    }
   }
 })

@@ -290,8 +290,8 @@
                 <button
                   type="button"
                   class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
-                  @click="createForm.imageUrl = ''"
                   aria-label="Remove image"
+                  @click="createForm.imageUrl = ''"
                 >
                   <XIcon class="size-3" />
                 </button>
@@ -320,8 +320,8 @@
                   <button
                     type="button"
                     class="text-muted-foreground hover:text-destructive"
-                    @click="removeItem(idx)"
                     aria-label="Remove checklist item"
+                    @click="removeItem(idx)"
                   >
                     <XIcon class="size-3.5" />
                   </button>
@@ -599,8 +599,8 @@
               <button
                 type="button"
                 class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
-                @click="editForm.imageUrl = ''"
                 aria-label="Remove image"
+                @click="editForm.imageUrl = ''"
               >
                 <XIcon class="size-3" />
               </button>
@@ -629,8 +629,8 @@
                 <button
                   type="button"
                   class="text-muted-foreground hover:text-destructive"
-                  @click="removeEditItem(idx)"
                   aria-label="Remove item"
+                  @click="removeEditItem(idx)"
                 >
                   <XIcon class="size-3.5" />
                 </button>

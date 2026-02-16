@@ -39,7 +39,7 @@
         <!-- Right side actions -->
         <div class="flex items-center gap-2">
           <!-- Theme toggle -->
-          <Button variant="ghost" size="icon" @click="toggleTheme" aria-label="Toggle theme">
+          <Button variant="ghost" size="icon" aria-label="Toggle theme" @click="toggleTheme">
             <SunIcon v-if="isDark" class="size-4" />
             <MoonIcon v-else class="size-4" />
           </Button>
