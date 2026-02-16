@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "tailwindlabs.tailwindcss-intellisense",
+    "Gruntfuggly.todo-tree",
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+    "aaron-bond.better-comments",
+    "ms-playwright.playwright"
+  ]
+}
