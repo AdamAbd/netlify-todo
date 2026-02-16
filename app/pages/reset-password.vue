@@ -110,7 +110,7 @@
             Your password has been updated. You can now sign in with your new password.
           </p>
         </div>
-        <Button class="h-11 w-full" as-child>
+        <Button size="lg" class="w-full" as-child>
           <NuxtLink to="/login">Go to sign in</NuxtLink>
         </Button>
       </div>
@@ -214,7 +214,8 @@
 
         <Button
           type="submit"
-          class="h-11 w-full"
+          size="lg"
+          class="w-full"
           :disabled="isSubmitting || !passwordsMatch || !token"
         >
           <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />
