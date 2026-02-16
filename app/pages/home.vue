@@ -106,6 +106,12 @@
     toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
   }
 
+  const handleEditImageError = () => {
+    editForm.imageUrl = ''
+
+    toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
+  }
+
   // Edit form
   const editForm = reactive<{
     title: string
@@ -583,11 +589,11 @@
               />
             </div>
             <div v-if="editForm.imageUrl" class="relative overflow-hidden rounded-lg border">
-              <img
+              <NuxtImg
                 :src="editForm.imageUrl"
                 alt="Preview"
                 class="h-32 w-full object-cover"
-                @error="editForm.imageUrl = ''"
+                @error="handleEditImageError"
               />
               <button
                 type="button"
