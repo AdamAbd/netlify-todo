@@ -1,5 +1,5 @@
-// @ts-check
 import withNuxt from './.nuxt/eslint.config.mjs'
+import skipFormatting from 'eslint-config-prettier'
 
 export default withNuxt(
   // Custom rules - Moderate config
@@ -33,5 +33,6 @@ export default withNuxt(
       'import/order': 'off', // Biarkan Nuxt auto-import handle
       'import/no-duplicates': 'warn',
     },
-  }
+  },
+  skipFormatting
 )
