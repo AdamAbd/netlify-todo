@@ -16,7 +16,7 @@
     ListChecksIcon,
   } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
-  import type { TodoStatus, TodoItem, CreateTodoPayload } from '~/composables/useTodos'
+  import type { Todo, TodoStatus, TodoItem, CreateTodoPayload } from '~/composables/useTodos'
 
   definePageMeta({
     middleware: ['auth'],
@@ -53,7 +53,7 @@
   // Dialog state
   const isCreateDialogOpen = ref(false)
   const isEditDialogOpen = ref(false)
-  const editingTodo = ref<any>(null)
+  const editingTodo = ref<Todo | null>(null)
 
   // Create form
   const createForm = reactive<CreateTodoPayload>({
@@ -139,7 +139,7 @@
     editForm.items.splice(index, 1)
   }
 
-  const openEdit = (todo: any) => {
+  const openEdit = (todo: Todo) => {
     editingTodo.value = todo
     editForm.title = todo.title
     editForm.description = todo.description || ''
