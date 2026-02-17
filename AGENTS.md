@@ -136,7 +136,7 @@ project-root/
 - Relationships between tables
 - Type definitions for database entities
 
-**`server/db/index.ts`**
+**`server/db/db.ts`**
 
 - Database connection setup
 - Neon client initialization
@@ -168,7 +168,7 @@ project-root/
 
 **Better Auth Integration**
 
-- Configuration typically in `server/api/auth/[...].ts` or dedicated auth plugin
+- Configuration in `server/api/auth/[...all].ts` or dedicated auth plugin
 - Session management
 - OAuth providers setup
 - User model integration with Drizzle
@@ -212,6 +212,75 @@ project-root/
 - Prefer server-side data fetching with `useFetch` or `useAsyncData`
 - Use auto-imported Nuxt utilities (no need to import `ref`, `computed`, etc.)
 
+### Import Path Conventions (Required)
+
+- For files inside `app/`, always use `@/` alias (example: `@/components/ui/button`)
+- For files inside `server/`, always use `#server` alias (example: `#server/db/db`)
+- For files inside `shared/`, always use `#shared` alias (example: `#shared/types/user`)
+- Avoid using relative paths (`../../`) and avoid `~/server/*` or `~/shared/*`
+
+### Form Standards (Required: Zod + vee-validate)
+
+- Every new form must use `zod` schema validation and `vee-validate`
+- Use `toTypedSchema` from `@vee-validate/zod` to connect Zod schema to `vee-validate`
+- Use shadcn-vue form primitives in `app/components/ui/form/`
+
+Example (`shadcn-vue` + `vee-validate` + `zod`):
+
+```vue
+<script setup lang="ts">
+  import { z } from 'zod'
+  import { useForm } from 'vee-validate'
+  import { toTypedSchema } from '@vee-validate/zod'
+
+  const formSchema = toTypedSchema(
+    z.object({
+      email: z.string().email('Please enter a valid email address'),
+      password: z.string().min(8, 'Password must be at least 8 characters'),
+    })
+  )
+
+  const form = useForm({
+    validationSchema: formSchema,
+    initialValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = form.handleSubmit(async (values) => {
+    // call API
+    console.log(values)
+  })
+</script>
+
+<template>
+  <form class="space-y-6" @submit="onSubmit">
+    <FormField v-slot="{ componentField }" name="email">
+      <FormItem>
+        <FormLabel>Email</FormLabel>
+        <FormControl>
+          <Input type="email" placeholder="email@example.com" v-bind="componentField" />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    </FormField>
+
+    <FormField v-slot="{ componentField }" name="password">
+      <FormItem>
+        <FormLabel>Password</FormLabel>
+        <FormControl>
+          <Input type="password" placeholder="********" v-bind="componentField" />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    </FormField>
+
+    <Button type="submit">Submit</Button>
+  </form>
+</template>
+```
+
 ### Authentication Patterns
 
 ```typescript
@@ -231,8 +300,8 @@ definePageMeta({
 
 ```typescript
 // server/api/example.get.ts
-import { db } from '~/server/db'
-import { users } from '~/server/db/schema'
+import { db } from '#server/db/db'
+import { users } from '#server/db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -310,8 +379,8 @@ Required environment variables (add to `.env`):
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
 # Better Auth
-AUTH_SECRET=your-secret-key-here
-AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=your-secret-key-here
+BETTER_AUTH_URL=http://localhost:3000
 
 # OAuth Providers (if using)
 GOOGLE_CLIENT_ID=
@@ -400,7 +469,7 @@ CMD ["bun", "run", ".output/server/index.mjs"]
 ### Environment Setup
 
 - Use different DATABASE_URL for staging/production
-- Rotate AUTH_SECRET for each environment
+- Rotate BETTER_AUTH_SECRET for each environment
 - Configure CORS if needed for external APIs
 
 ## AI Agent Instructions
@@ -433,7 +502,7 @@ When working with this codebase:
 
 **Authentication Issues**:
 
-- Verify AUTH_SECRET is set
+- Verify BETTER_AUTH_SECRET is set
 - Check session configuration
 - Ensure cookies are enabled in browser
 
@@ -465,5 +534,5 @@ When working with this codebase:
 
 ---
 
-**Last Updated**: 16 Feb 2026
+**Last Updated**: 17 Feb 2026
 **Maintainers**: Adam Abdurrahman
