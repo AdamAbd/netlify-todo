@@ -3,8 +3,15 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from '#server/db/db'
 import { Resend } from 'resend'
 
-// Requires BETTER_AUTH_SECRET and BETTER_AUTH_URL to be set in the runtime config (as defined in nuxt.config.ts)
+// Requires BETTER_AUTH_SECRET, BETTER_AUTH_URL and RESEND_API_KEY to be set in the runtime config (as defined in nuxt.config.ts)
 const config = useRuntimeConfig()
+
+if (!config.betterAuthSecret || !config.betterAuthUrl || !config.resendApiKey) {
+  throw new Error(
+    'BETTER_AUTH_SECRET, BETTER_AUTH_URL and RESEND_API_KEY are required for better-auth'
+  )
+}
+
 const resend = new Resend(config.resendApiKey)
 
 export const auth = betterAuth({
