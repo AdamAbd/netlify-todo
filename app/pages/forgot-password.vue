@@ -1,5 +1,10 @@
 <script setup lang="ts">
   import { ArrowLeftIcon, Loader2Icon, MailIcon, CheckCircle2Icon } from 'lucide-vue-next'
+  import { toTypedSchema } from '@vee-validate/zod'
+  import { useForm, Field as VeeField } from 'vee-validate'
+  import * as z from 'zod'
+  import { authClient } from '@/lib/auth-client'
+  import { toast } from 'vue-sonner'
 
   definePageMeta({
     layout: 'auth',
@@ -11,19 +16,54 @@
     meta: [{ name: 'description', content: 'Reset your Todoist password via email.' }],
   })
 
-  const email = ref('')
+  const forgotPasswordSchema = toTypedSchema(
+    z.object({
+      email: z.string().email('Invalid email address'),
+    })
+  )
+
+  const { handleSubmit, values } = useForm({
+    validationSchema: forgotPasswordSchema,
+    initialValues: {
+      email: '',
+    },
+  })
+
   const isSubmitting = ref(false)
   const errorMessage = ref('')
   const isSuccess = ref(false)
 
-  const handleSubmit = async () => {
-    errorMessage.value = ''
-    isSubmitting.value = true
-
-    // TODO: Implement forgot password
-
-    isSubmitting.value = false
-  }
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      await authClient.requestPasswordReset(
+        {
+          email: values.email,
+          redirectTo: '/reset-password',
+        },
+        {
+          onRequest: () => {
+            errorMessage.value = ''
+            isSubmitting.value = true
+          },
+          onSuccess: () => {
+            isSubmitting.value = false
+            isSuccess.value = true
+          },
+          onError: (ctx) => {
+            isSubmitting.value = false
+            errorMessage.value = ctx.error.message
+            toast.error(ctx.error.message)
+          },
+        }
+      )
+    } catch (e: unknown) {
+      isSubmitting.value = false
+      const message =
+        (e instanceof Error && e.message) || String(e) || 'An unexpected error occurred'
+      errorMessage.value = message
+      toast.error(message)
+    }
+  })
 </script>
 
 <template>
@@ -47,7 +87,7 @@
           <h1 class="text-2xl font-bold tracking-tight">Check your email</h1>
           <p class="text-muted-foreground text-sm">
             We've sent a password reset link to
-            <span class="text-foreground font-medium">{{ email }}</span
+            <span class="text-foreground font-medium">{{ values.email }}</span
             >. Please check your inbox and follow the instructions.
           </p>
         </div>
@@ -79,23 +119,28 @@
       </div>
 
       <!-- Form -->
-      <form class="space-y-4" @submit.prevent="handleSubmit">
-        <div class="space-y-2">
-          <Label for="email">Email</Label>
-          <div class="relative">
-            <MailIcon
-              class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
-            />
-            <Input
-              id="email"
-              v-model="email"
-              type="email"
-              placeholder="name@example.com"
-              required
-              class="pl-10"
-            />
-          </div>
-        </div>
+      <form id="form-forgot-password" class="space-y-4" @submit="onSubmit">
+        <!-- Email -->
+        <VeeField v-slot="{ field, errors }" name="email">
+          <Field :data-invalid="!!errors.length">
+            <FieldLabel for="form-forgot-password-email">Email</FieldLabel>
+            <InputGroup>
+              <InputGroupInput
+                id="form-forgot-password-email"
+                :model-value="field.value"
+                type="email"
+                placeholder="name@example.com"
+                :disabled="isSubmitting"
+                autocomplete="email"
+                @update:model-value="field.onChange"
+              />
+              <InputGroupAddon>
+                <MailIcon />
+              </InputGroupAddon>
+            </InputGroup>
+            <FieldError v-if="errors.length" :errors="errors" />
+          </Field>
+        </VeeField>
 
         <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting">
           <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />

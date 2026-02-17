@@ -10,8 +10,13 @@
   const user = computed(() => session.value?.data?.user)
 
   const handleLogout = async () => {
-    await authClient.signOut()
-    navigateTo('/login', { external: true })
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          navigateTo('/login', { external: true }) // redirect to login page
+        },
+      },
+    })
   }
 </script>
 
