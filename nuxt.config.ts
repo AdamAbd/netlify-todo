@@ -6,6 +6,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   nitro: {
     preset: 'netlify-edge',
+    alias: {
+      '@react-email/render': 'unenv/mock/proxy',
+    },
   },
   routeRules: {
     '/': { prerender: true },
