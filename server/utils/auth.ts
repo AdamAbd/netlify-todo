@@ -124,3 +124,17 @@ export const auth = betterAuth({
     },
   },
 })
+
+export const requireAuth = async (event: any) => {
+  const session = await auth.api.getSession({
+    headers: event.headers,
+  })
+
+  if (!session) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized',
+    })
+  }
+  return session
+}
