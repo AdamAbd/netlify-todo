@@ -62,36 +62,46 @@
           },
         }
       )
-    } catch (e: any) {
+    } catch (e: unknown) {
       isSubmitting.value = false
-      errorMessage.value = e.message || 'An unexpected error occurred'
-      toast.error(errorMessage.value)
+      const message =
+        (e instanceof Error && e.message) || String(e) || 'An unexpected error occurred'
+      errorMessage.value = message
+      toast.error(message)
     }
   })
 
   const handleGoogleLogin = async () => {
-    await authClient.signIn.social(
-      {
-        provider: 'google',
-        callbackURL: '/home',
-      },
-      {
-        onRequest: (_ctx) => {
-          errorMessage.value = ''
-          isGoogleSubmitting.value = true
+    try {
+      await authClient.signIn.social(
+        {
+          provider: 'google',
+          callbackURL: '/home',
         },
-        onSuccess: (_ctx) => {
-          isGoogleSubmitting.value = false
-        },
-        onError: (ctx) => {
-          isGoogleSubmitting.value = false
+        {
+          onRequest: (_ctx) => {
+            errorMessage.value = ''
+            isGoogleSubmitting.value = true
+          },
+          onSuccess: (_ctx) => {
+            isGoogleSubmitting.value = false
+          },
+          onError: (ctx) => {
+            isGoogleSubmitting.value = false
 
-          // display the error message
-          errorMessage.value = ctx.error.message
-          toast.error(ctx.error.message)
-        },
-      }
-    )
+            // display the error message
+            errorMessage.value = ctx.error.message
+            toast.error(ctx.error.message)
+          },
+        }
+      )
+    } catch (e: unknown) {
+      isSubmitting.value = false
+      const message =
+        (e instanceof Error && e.message) || String(e) || 'An unexpected error occurred'
+      errorMessage.value = message
+      toast.error(message)
+    }
   }
 </script>
 
