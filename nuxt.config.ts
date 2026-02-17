@@ -49,5 +49,7 @@ export default defineNuxtConfig({
     betterAuthSecret: process.env.BETTER_AUTH_SECRET,
     betterAuthUrl: process.env.BETTER_AUTH_URL,
     resendApiKey: process.env.RESEND_API_KEY,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
 })

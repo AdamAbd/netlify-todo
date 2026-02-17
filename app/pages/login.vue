@@ -35,6 +35,7 @@
 
   const showPassword = ref(false)
   const isSubmitting = ref(false)
+  const isGoogleSubmitting = ref(false)
   const errorMessage = ref('')
 
   const onSubmit = handleSubmit(async (values) => {
@@ -61,18 +62,46 @@
           },
         }
       )
-    } catch (e: any) {
+    } catch (e: unknown) {
       isSubmitting.value = false
-      errorMessage.value = e.message || 'An unexpected error occurred'
-      toast.error(errorMessage.value)
+      const message =
+        (e instanceof Error && e.message) || String(e) || 'An unexpected error occurred'
+      errorMessage.value = message
+      toast.error(message)
     }
   })
 
   const handleGoogleLogin = async () => {
-    await authClient.signIn.social({
-      provider: 'google',
-      callbackURL: '/home',
-    })
+    try {
+      await authClient.signIn.social(
+        {
+          provider: 'google',
+          callbackURL: '/home',
+        },
+        {
+          onRequest: (_ctx) => {
+            errorMessage.value = ''
+            isGoogleSubmitting.value = true
+          },
+          onSuccess: (_ctx) => {
+            isGoogleSubmitting.value = false
+          },
+          onError: (ctx) => {
+            isGoogleSubmitting.value = false
+
+            // display the error message
+            errorMessage.value = ctx.error.message
+            toast.error(ctx.error.message)
+          },
+        }
+      )
+    } catch (e: unknown) {
+      isSubmitting.value = false
+      const message =
+        (e instanceof Error && e.message) || String(e) || 'An unexpected error occurred'
+      errorMessage.value = message
+      toast.error(message)
+    }
   }
 </script>
 
@@ -85,9 +114,16 @@
     </div>
 
     <!-- Google OAuth Button -->
-    <Button variant="outline" size="lg" class="w-full" @click="handleGoogleLogin">
-      <SharedGoogleLogo />
-      Continue with Google
+    <Button
+      variant="outline"
+      size="lg"
+      class="w-full"
+      :disabled="isSubmitting || isGoogleSubmitting"
+      @click="handleGoogleLogin"
+    >
+      <Loader2Icon v-if="isGoogleSubmitting" class="mr-2 size-4 animate-spin" />
+      <SharedGoogleLogo v-else />
+      {{ isGoogleSubmitting ? 'Connecting...' : 'Continue with Google' }}
     </Button>
 
     <!-- Divider -->
@@ -120,7 +156,7 @@
               :model-value="field.value"
               type="email"
               placeholder="name@example.com"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isGoogleSubmitting"
               autocomplete="email"
               @update:model-value="field.onChange"
             />
@@ -150,7 +186,7 @@
               :model-value="field.value"
               :type="showPassword ? 'text' : 'password'"
               placeholder="Enter your password"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isGoogleSubmitting"
               autocomplete="current-password"
               @update:model-value="field.onChange"
             />
@@ -169,7 +205,7 @@
       </VeeField>
 
       <!-- Submit -->
-      <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting">
+      <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting || isGoogleSubmitting">
         <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />
         {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
       </Button>
