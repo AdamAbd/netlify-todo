@@ -100,7 +100,7 @@
       to="/login"
       class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm transition-colors"
     >
-      <ArrowLeftIcon class="size-4" />
+      <ArrowLeftIcon />
       Back to login
     </NuxtLink>
 
@@ -163,7 +163,7 @@
                 @update:model-value="field.onChange"
               />
               <InputGroupAddon align="inline-start">
-                <LockIcon class="size-4" />
+                <LockIcon />
               </InputGroupAddon>
               <InputGroupAddon align="inline-end">
                 <InputGroupButton
@@ -171,8 +171,8 @@
                   size="icon-xs"
                   @click="showPassword = !showPassword"
                 >
-                  <EyeOffIcon v-if="showPassword" class="size-4" />
-                  <EyeIcon v-else class="size-4" />
+                  <EyeOffIcon v-if="showPassword" />
+                  <EyeIcon v-else />
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
@@ -209,7 +209,7 @@
                 @update:model-value="field.onChange"
               />
               <InputGroupAddon align="inline-start">
-                <LockIcon class="size-4" />
+                <LockIcon />
               </InputGroupAddon>
               <InputGroupAddon align="inline-end">
                 <InputGroupButton
@@ -217,8 +217,8 @@
                   size="icon-xs"
                   @click="showConfirmPassword = !showConfirmPassword"
                 >
-                  <EyeOffIcon v-if="showConfirmPassword" class="size-4" />
-                  <EyeIcon v-else class="size-4" />
+                  <EyeOffIcon v-if="showConfirmPassword" />
+                  <EyeIcon v-else />
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
