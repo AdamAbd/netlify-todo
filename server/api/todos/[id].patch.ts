@@ -1,23 +1,8 @@
-import { z } from 'zod'
 import { db } from '#server/db/db'
 import { todo } from '#server/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { requireAuth } from '#server/utils/auth'
-
-const updateTodoSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
-  status: z.enum(['backlog', 'in_progress', 'finished']).optional(),
-  items: z
-    .array(
-      z.object({
-        label: z.string(),
-        checked: z.boolean(),
-      })
-    )
-    .optional(),
-  imageUrl: z.string().optional(),
-})
+import { updateTodoSchema } from '#shared/types/todo'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)

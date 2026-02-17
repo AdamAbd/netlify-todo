@@ -1,22 +1,7 @@
-import { z } from 'zod'
 import { db } from '#server/db/db'
 import { todo } from '#server/db/schema'
 import { requireAuth } from '#server/utils/auth'
-
-const createTodoSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
-  status: z.enum(['backlog', 'in_progress', 'finished']).optional(),
-  items: z
-    .array(
-      z.object({
-        label: z.string(),
-        checked: z.boolean(),
-      })
-    )
-    .optional(),
-  imageUrl: z.string().optional(),
-})
+import { createTodoSchema } from '#shared/types/todo'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)
@@ -40,11 +25,9 @@ export default defineEventHandler(async (event) => {
     .values({
       id: crypto.randomUUID(),
       userId,
-      title: data.title,
-      description: data.description,
-      status: data.status || 'backlog',
-      items: data.items || [],
-      imageUrl: data.imageUrl,
+      ...data,
+      status: data.status, // ensured by z.enum().default()
+      items: data.items, // ensured by z.array().default()
     })
     .returning()
 
