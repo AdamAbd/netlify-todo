@@ -53,38 +53,32 @@
   const passwordStrength = usePasswordStrength(() => values.password || '')
 
   const onSubmit = handleSubmit(async (values) => {
-    errorMessage.value = ''
-    isSubmitting.value = true
-
-    try {
-      await authClient.signUp.email(
-        {
-          email: values.email, // user email address
-          password: values.password, // user password -> min 8 characters by default
-          name: values.name, // user display name
-          callbackURL: '/home', // A URL to redirect to after the user verifies their email (optional)
+    await authClient.signUp.email(
+      {
+        email: values.email, // user email address
+        password: values.password, // user password -> min 8 characters by default
+        name: values.name, // user display name
+        callbackURL: '/home', // A URL to redirect to after the user verifies their email (optional)
+      },
+      {
+        onRequest: (_ctx) => {
+          errorMessage.value = ''
+          isSubmitting.value = true
         },
-        {
-          onRequest: (_ctx) => {
-            //show loading
-          },
-          onSuccess: (_ctx) => {
-            toast.success('Account created successfully')
-            navigateTo('/home')
-            //redirect to the dashboard or sign in page
-          },
-          onError: (ctx) => {
-            // display the error message
-            errorMessage.value = ctx.error.message
-            toast.error(ctx.error.message)
-          },
-        }
-      )
-    } catch (error: any) {
-      errorMessage.value = error.message || 'An unexpected error occurred'
-    } finally {
-      isSubmitting.value = false
-    }
+        onSuccess: (_ctx) => {
+          isSubmitting.value = false
+
+          toast.success('Account created successfully')
+        },
+        onError: (ctx) => {
+          isSubmitting.value = false
+
+          // display the error message
+          errorMessage.value = ctx.error.message
+          toast.error(ctx.error.message)
+        },
+      }
+    )
   })
 
   const handleGoogleLogin = () => {
