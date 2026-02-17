@@ -37,8 +37,19 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 ```
 netlify-todo
 ├─ .agent
-│  └─ rules
-│     └─ 00-follow-agents-md.md
+│  ├─ rules
+│  │  └─ 00-follow-agents-md.md
+│  └─ skills
+│     ├─ better-auth-best-practices
+│     │  └─ SKILL.md
+│     └─ better-auth-security-best-practices
+│        └─ SKILL.MD
+├─ .agents
+│  └─ skills
+│     ├─ better-auth-best-practices
+│     │  └─ SKILL.md
+│     └─ better-auth-security-best-practices
+│        └─ SKILL.MD
 ├─ .prettierignore
 ├─ .prettierrc
 ├─ AGENTS.md
@@ -49,6 +60,8 @@ netlify-todo
 │  │  └─ css
 │  │     └─ main.css
 │  ├─ components
+│  │  ├─ shared
+│  │  │  └─ GoogleLogo.vue
 │  │  └─ ui
 │  │     ├─ accordion
 │  │     │  ├─ Accordion.vue
@@ -508,12 +521,13 @@ netlify-todo
 │  │        ├─ TooltipTrigger.vue
 │  │        └─ index.ts
 │  ├─ composables
-│  │  ├─ useAuth.ts
+│  │  ├─ usePasswordStrength.ts
 │  │  └─ useTodos.ts
 │  ├─ layouts
 │  │  ├─ auth.vue
 │  │  └─ default.vue
 │  ├─ lib
+│  │  ├─ auth-client.ts
 │  │  └─ utils.ts
 │  ├─ middleware
 │  │  ├─ auth.ts
@@ -529,6 +543,7 @@ netlify-todo
 │     └─ ssr-width.ts
 ├─ bun.lock
 ├─ components.json
+├─ drizzle.config.ts
 ├─ eslint.config.mjs
 ├─ netlify.toml
 ├─ nuxt.config.ts
@@ -537,6 +552,20 @@ netlify-todo
 ├─ public
 │  ├─ favicon.ico
 │  └─ robots.txt
+├─ server
+│  ├─ api
+│  │  └─ auth
+│  │     └─ [...all].ts
+│  ├─ db
+│  │  ├─ db.ts
+│  │  ├─ migrations
+│  │  │  ├─ 0000_far_retro_girl.sql
+│  │  │  └─ meta
+│  │  │     ├─ 0000_snapshot.json
+│  │  │     └─ _journal.json
+│  │  └─ schema.ts
+│  └─ utils
+│     └─ auth.ts
 ├─ test
 │  ├─ e2e
 │  │  └─ example.spec.ts
