@@ -1,5 +1,10 @@
 <script setup lang="ts">
   import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, LockIcon } from 'lucide-vue-next'
+  import { toTypedSchema } from '@vee-validate/zod'
+  import { useForm, Field as VeeField } from 'vee-validate'
+  import * as z from 'zod'
+  import { authClient } from '@/lib/auth-client'
+  import { toast } from 'vue-sonner'
 
   definePageMeta({
     layout: 'auth',
@@ -13,24 +18,55 @@
     ],
   })
 
-  const form = reactive({
-    email: '',
-    password: '',
+  const loginSchema = toTypedSchema(
+    z.object({
+      email: z.string().email('Invalid email address'),
+      password: z.string().min(1, 'Password is required'),
+    })
+  )
+
+  const { handleSubmit } = useForm({
+    validationSchema: loginSchema,
+    initialValues: {
+      email: '',
+      password: '',
+    },
   })
+
   const showPassword = ref(false)
   const isSubmitting = ref(false)
   const errorMessage = ref('')
 
-  const handleSubmit = async () => {
-    errorMessage.value = ''
-    isSubmitting.value = true
+  const onSubmit = handleSubmit(async (values) => {
+    await authClient.signIn.email(
+      {
+        email: values.email,
+        password: values.password,
+        callbackURL: '/home',
+      },
+      {
+        onRequest: () => {
+          errorMessage.value = ''
+          isSubmitting.value = true
+        },
+        onSuccess: () => {
+          isSubmitting.value = false
+          toast.success('Signed in successfully')
+        },
+        onError: (ctx) => {
+          isSubmitting.value = false
+          errorMessage.value = ctx.error.message
+          toast.error(ctx.error.message)
+        },
+      }
+    )
+  })
 
-    // TODO: Implement login with better-auth
-    isSubmitting.value = false
-  }
-
-  const handleGoogleLogin = () => {
-    // TODO: Implement google login with better-auth
+  const handleGoogleLogin = async () => {
+    await authClient.signIn.social({
+      provider: 'google',
+      callbackURL: '/home',
+    })
   }
 </script>
 
@@ -67,54 +103,64 @@
     </div>
 
     <!-- Login Form -->
-    <form class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="form-login" class="space-y-4" @submit="onSubmit">
       <!-- Email -->
-      <div class="space-y-2">
-        <Label for="email">Email</Label>
-        <div class="relative">
-          <MailIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="email"
-            v-model="form.email"
-            type="email"
-            placeholder="name@example.com"
-            required
-            class="pl-10"
-          />
-        </div>
-      </div>
+      <VeeField v-slot="{ field, errors }" name="email">
+        <Field :data-invalid="!!errors.length">
+          <FieldLabel for="form-login-email">Email</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="form-login-email"
+              :model-value="field.value"
+              type="email"
+              placeholder="name@example.com"
+              :disabled="isSubmitting"
+              autocomplete="email"
+              @update:model-value="field.onChange"
+            />
+            <InputGroupAddon>
+              <MailIcon />
+            </InputGroupAddon>
+          </InputGroup>
+          <FieldError v-if="errors.length" :errors="errors" />
+        </Field>
+      </VeeField>
 
       <!-- Password -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <Label for="password">Password</Label>
-          <NuxtLink
-            to="/forgot-password"
-            class="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
-          >
-            Forgot password?
-          </NuxtLink>
-        </div>
-        <div class="relative">
-          <LockIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="password"
-            v-model="form.password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="Enter your password"
-            required
-            class="pr-10 pl-10"
-          />
-          <button
-            type="button"
-            class="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-            @click="showPassword = !showPassword"
-          >
-            <EyeOffIcon v-if="showPassword" class="size-4" />
-            <EyeIcon v-else class="size-4" />
-          </button>
-        </div>
-      </div>
+      <VeeField v-slot="{ field, errors }" name="password">
+        <Field :data-invalid="!!errors.length">
+          <div class="flex items-center justify-between">
+            <FieldLabel for="form-login-password">Password</FieldLabel>
+            <NuxtLink
+              to="/forgot-password"
+              class="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
+            >
+              Forgot password?
+            </NuxtLink>
+          </div>
+          <InputGroup>
+            <InputGroupInput
+              id="form-login-password"
+              :model-value="field.value"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Enter your password"
+              :disabled="isSubmitting"
+              autocomplete="current-password"
+              @update:model-value="field.onChange"
+            />
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton type="button" size="icon-xs" @click="showPassword = !showPassword">
+                <EyeOffIcon v-if="showPassword" class="size-4" />
+                <EyeIcon v-else class="size-4" />
+              </InputGroupButton>
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-start">
+              <LockIcon />
+            </InputGroupAddon>
+          </InputGroup>
+          <FieldError v-if="errors.length" :errors="errors" />
+        </Field>
+      </VeeField>
 
       <!-- Submit -->
       <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting">

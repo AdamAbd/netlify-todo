@@ -4,7 +4,6 @@
     Loader2Icon,
     ImageIcon,
     Trash2Icon,
-    GripVerticalIcon,
     CheckCircle2Icon,
     CircleDotIcon,
     CircleIcon,
@@ -12,11 +11,10 @@
     PencilIcon,
     ArrowRightIcon,
     XIcon,
-    UploadIcon,
     ListChecksIcon,
   } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
-  import type { Todo, TodoStatus, TodoItem, CreateTodoPayload } from '~/composables/useTodos'
+  import type { Todo, TodoStatus, TodoItem, CreateTodoPayload } from '@/composables/useTodos'
 
   definePageMeta({
     middleware: ['auth'],

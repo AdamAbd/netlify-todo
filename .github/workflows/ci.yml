@@ -33,6 +33,11 @@ jobs:
 
       - name: Build
         run: bun run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+
   deploy:
     name: Deploy to Netlify
     needs: lint-and-test
@@ -54,6 +59,10 @@ jobs:
 
       - name: Build
         run: bun run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
 
       - name: Deploy to Netlify
         run: bunx netlify-cli deploy --dir=dist --prod
