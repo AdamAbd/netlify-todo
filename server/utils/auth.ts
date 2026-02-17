@@ -3,12 +3,18 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from '#server/db/db'
 import { Resend } from 'resend'
 
-// Requires BETTER_AUTH_SECRET, BETTER_AUTH_URL and RESEND_API_KEY to be set in the runtime config (as defined in nuxt.config.ts)
+// Requires BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and RESEND_API_KEY to be set in the runtime config (as defined in nuxt.config.ts)
 const config = useRuntimeConfig()
 
-if (!config.betterAuthSecret || !config.betterAuthUrl || !config.resendApiKey) {
+if (
+  !config.betterAuthSecret ||
+  !config.betterAuthUrl ||
+  !config.googleClientId ||
+  !config.googleClientSecret ||
+  !config.resendApiKey
+) {
   throw new Error(
-    'BETTER_AUTH_SECRET, BETTER_AUTH_URL and RESEND_API_KEY are required for better-auth'
+    'BETTER_AUTH_SECRET, BETTER_AUTH_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and RESEND_API_KEY are required for better-auth'
   )
 }
 
@@ -20,6 +26,12 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
   }),
+  socialProviders: {
+    google: {
+      clientId: config.googleClientId,
+      clientSecret: config.googleClientSecret,
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },

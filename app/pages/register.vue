@@ -48,6 +48,7 @@
   const showPassword = ref(false)
   const showConfirmPassword = ref(false)
   const isSubmitting = ref(false)
+  const isGoogleSubmitting = ref(false)
   const errorMessage = ref('')
 
   const passwordStrength = usePasswordStrength(() => values.password || '')
@@ -87,8 +88,29 @@
     }
   })
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement google login with better-auth
+  const handleGoogleLogin = async () => {
+    await authClient.signIn.social(
+      {
+        provider: 'google',
+        callbackURL: '/home',
+      },
+      {
+        onRequest: (_ctx) => {
+          errorMessage.value = ''
+          isGoogleSubmitting.value = true
+        },
+        onSuccess: (_ctx) => {
+          isGoogleSubmitting.value = false
+        },
+        onError: (ctx) => {
+          isGoogleSubmitting.value = false
+
+          // display the error message
+          errorMessage.value = ctx.error.message
+          toast.error(ctx.error.message)
+        },
+      }
+    )
   }
 </script>
 
@@ -101,9 +123,16 @@
     </div>
 
     <!-- Google OAuth Button -->
-    <Button variant="outline" size="lg" class="w-full" @click="handleGoogleLogin">
-      <SharedGoogleLogo />
-      Continue with Google
+    <Button
+      variant="outline"
+      size="lg"
+      class="w-full"
+      :disabled="isSubmitting || isGoogleSubmitting"
+      @click="handleGoogleLogin"
+    >
+      <Loader2Icon v-if="isGoogleSubmitting" class="mr-2 size-4 animate-spin" />
+      <SharedGoogleLogo v-else />
+      {{ isGoogleSubmitting ? 'Connecting...' : 'Continue with Google' }}
     </Button>
 
     <!-- Divider -->
@@ -136,7 +165,7 @@
               :model-value="field.value"
               type="text"
               placeholder="John Doe"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isGoogleSubmitting"
               autocomplete="name"
               @update:model-value="field.onChange"
             />
@@ -158,7 +187,7 @@
               :model-value="field.value"
               type="email"
               placeholder="name@example.com"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isGoogleSubmitting"
               autocomplete="email"
               @update:model-value="field.onChange"
             />
@@ -180,7 +209,7 @@
               :model-value="field.value"
               :type="showPassword ? 'text' : 'password'"
               placeholder="Create a strong password"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isGoogleSubmitting"
               autocomplete="new-password"
               @update:model-value="field.onChange"
             />
@@ -219,7 +248,7 @@
               :model-value="field.value"
               :type="showConfirmPassword ? 'text' : 'password'"
               placeholder="Confirm your password"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isGoogleSubmitting"
               autocomplete="new-password"
               @update:model-value="field.onChange"
             />
@@ -239,7 +268,7 @@
       </VeeField>
 
       <!-- Submit -->
-      <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting">
+      <Button type="submit" size="lg" class="w-full" :disabled="isSubmitting || isGoogleSubmitting">
         <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />
         {{ isSubmitting ? 'Creating account...' : 'Create account' }}
       </Button>
