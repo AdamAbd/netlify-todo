@@ -38,28 +38,34 @@
   const errorMessage = ref('')
 
   const onSubmit = handleSubmit(async (values) => {
-    await authClient.signIn.email(
-      {
-        email: values.email,
-        password: values.password,
-        callbackURL: '/home',
-      },
-      {
-        onRequest: () => {
-          errorMessage.value = ''
-          isSubmitting.value = true
+    try {
+      await authClient.signIn.email(
+        {
+          email: values.email,
+          password: values.password,
+          callbackURL: '/home',
         },
-        onSuccess: () => {
-          isSubmitting.value = false
-          toast.success('Signed in successfully')
-        },
-        onError: (ctx) => {
-          isSubmitting.value = false
-          errorMessage.value = ctx.error.message
-          toast.error(ctx.error.message)
-        },
-      }
-    )
+        {
+          onRequest: () => {
+            errorMessage.value = ''
+            isSubmitting.value = true
+          },
+          onSuccess: () => {
+            isSubmitting.value = false
+            toast.success('Signed in successfully')
+          },
+          onError: (ctx) => {
+            isSubmitting.value = false
+            errorMessage.value = ctx.error.message
+            toast.error(ctx.error.message)
+          },
+        }
+      )
+    } catch (e: any) {
+      isSubmitting.value = false
+      errorMessage.value = e.message || 'An unexpected error occurred'
+      toast.error(errorMessage.value)
+    }
   })
 
   const handleGoogleLogin = async () => {
