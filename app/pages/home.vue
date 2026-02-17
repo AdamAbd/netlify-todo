@@ -14,7 +14,13 @@
     ListChecksIcon,
   } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
-  import type { Todo, TodoStatus, TodoItem, CreateTodoPayload } from '@/composables/useTodos'
+  import type {
+    Todo,
+    TodoStatus,
+    TodoItem,
+    CreateTodoPayload,
+    UpdateTodoPayload,
+  } from '#shared/types/todo'
 
   definePageMeta({
     middleware: ['auth'],
@@ -306,8 +312,8 @@
                   class="bg-muted/30 flex items-center gap-2 rounded-md border px-3 py-2"
                 >
                   <Checkbox
-                    :checked="item.checked"
-                    @update:checked="(val: boolean) => (item.checked = val)"
+                    :model-value="item.checked"
+                    @update:model-value="(val) => (item.checked = val as boolean)"
                   />
                   <span
                     class="flex-1 text-sm"
@@ -482,7 +488,7 @@
                 :key="idx"
                 class="flex items-center gap-2 text-xs"
               >
-                <Checkbox :checked="item.checked" class="size-3.5" disabled />
+                <Checkbox :model-value="item.checked" class="size-3.5" disabled />
                 <span
                   :class="item.checked ? 'text-muted-foreground line-through' : 'text-foreground'"
                 >
@@ -615,8 +621,8 @@
                 class="bg-muted/30 flex items-center gap-2 rounded-md border px-3 py-2"
               >
                 <Checkbox
-                  :checked="item.checked"
-                  @update:checked="(val: boolean) => (item.checked = val)"
+                  :model-value="item.checked"
+                  @update:model-value="(val) => (item.checked = val as boolean)"
                 />
                 <span
                   class="flex-1 text-sm"

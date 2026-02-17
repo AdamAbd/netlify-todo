@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm'
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, index, jsonb, pgEnum } from 'drizzle-orm/pg-core'
+import type { TodoItem } from '#shared/types/todo'
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -73,9 +74,33 @@ export const verification = pgTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)]
 )
 
+export const todoStatusEnum = pgEnum('todo_status', ['backlog', 'in_progress', 'finished'])
+
+export const todo = pgTable(
+  'todo',
+  {
+    id: text('id').primaryKey(),
+    title: text('title').notNull(),
+    description: text('description'),
+    status: todoStatusEnum('status').default('backlog').notNull(),
+    items: jsonb('items').$type<TodoItem[]>().default([]).notNull(),
+    imageUrl: text('image_url'),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index('todo_userId_idx').on(table.userId)]
+)
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  todos: many(todo),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -88,6 +113,13 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
+    references: [user.id],
+  }),
+}))
+
+export const todoRelations = relations(todo, ({ one }) => ({
+  user: one(user, {
+    fields: [todo.userId],
     references: [user.id],
   }),
 }))
