@@ -5,8 +5,8 @@
 This is a full-stack web application built with modern technologies:
 
 - **Runtime**: Bun (fast all-in-one JavaScript runtime)
-- **Framework**: Nuxt 4 (Vue 3 + SSR/SSG)
-- **UI Components**: shadcn-vue (Radix Vue primitives + Tailwind CSS)
+- **Framework**: Nuxt 4 (Vue 3 + CSR/Prerender/ISR)
+- **UI Components**: shadcn-vue (Radix Vue primitives + Tailwind CSS 4)
 - **Authentication**: Better Auth
 - **Database ORM**: Drizzle ORM
 - **Database**: Neon (Serverless Postgres)
@@ -15,10 +15,10 @@ This is a full-stack web application built with modern technologies:
 
 ### Frontend
 
-- **Nuxt 4**: Latest version with enhanced performance and DX
+- **Nuxt 4**: Latest version with CSR, Prerender, and ISR (No SSR)
 - **Vue 3**: Composition API, script setup syntax
 - **shadcn-vue**: Copy-paste component library with customizable UI primitives
-- **Tailwind CSS**: Utility-first styling
+- **Tailwind CSS 4**: Utility-first styling with the new CSS-first engine
 - **TypeScript**: Full type safety across the project
 
 ### Backend & Runtime
@@ -122,11 +122,11 @@ project-root/
 - Migration settings
 - Schema path definitions
 
-**`tailwind.config.js`**
+**`main.css`**
 
 - Tailwind theme customization
-- shadcn-vue color schemes
-- Plugin configurations
+- shadcn-vue color schemes (handled via CSS variables in v4)
+- Plugin configurations (integrated in @theme)
 
 ### Database Files
 
@@ -434,7 +434,7 @@ bun remove <package>       # Remove dependency
 - Native TypeScript support without transpilation
 - Ensure deployment platform supports Bun or use Docker
 
-### Vercel/Netlify
+### Netlify
 
 - Nuxt has first-class support
 - Configure for Bun runtime in platform settings
@@ -481,7 +481,7 @@ When working with this codebase:
 3. **Follow** shadcn-vue conventions for UI components
 4. **Use** Drizzle ORM query builder, not raw SQL
 5. **Leverage** Nuxt's auto-imports (composables, components, utils)
-6. **Consider** server-side rendering implications
+6. **Consider** CSR, Prerendering, and ISR implications (No SSR)
 7. **Validate** user input on both client and server
 8. **Handle** authentication state properly with Better Auth
 9. **Test** database queries in Drizzle Studio before implementation
