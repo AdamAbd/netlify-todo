@@ -68,7 +68,7 @@
         onSuccess: (_ctx) => {
           isSubmitting.value = false
 
-          toast.success('Account created successfully')
+          toast.success('Account created! Please check your email to verify your account.')
         },
         onError: (ctx) => {
           isSubmitting.value = false
