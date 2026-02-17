@@ -1,34 +1,33 @@
-export type TodoStatus = 'backlog' | 'in_progress' | 'finished'
+import { z } from 'zod'
 
-export interface TodoItem {
-  label: string
-  checked: boolean
-}
+export const TODO_STATUSES = ['backlog', 'in_progress', 'finished'] as const
+export const todoStatusSchema = z.enum(TODO_STATUSES)
+export type TodoStatus = z.infer<typeof todoStatusSchema>
 
-export interface Todo {
-  id: string
-  title: string
-  description?: string
-  status: TodoStatus
-  items: TodoItem[]
-  imageUrl?: string
-  userId: string
-  createdAt: string
-  updatedAt: string
-}
+export const todoItemSchema = z.object({
+  label: z.string().min(1, 'Label is required'),
+  checked: z.boolean().default(false),
+})
+export type TodoItem = z.infer<typeof todoItemSchema>
 
-export interface CreateTodoPayload {
-  title: string
-  description?: string
-  status?: TodoStatus
-  items?: TodoItem[]
-  imageUrl?: string
-}
+export const todoBaseSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  description: z.string().max(500, 'Description is too long').optional(),
+  status: todoStatusSchema.default('backlog'),
+  items: z.array(todoItemSchema).default([]),
+  imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+})
 
-export interface UpdateTodoPayload {
-  title?: string
-  description?: string
-  status?: TodoStatus
-  items?: TodoItem[]
-  imageUrl?: string
-}
+export const createTodoSchema = todoBaseSchema
+export const updateTodoSchema = todoBaseSchema.partial()
+
+export const todoSchema = todoBaseSchema.extend({
+  id: z.string(),
+  userId: z.string(),
+  createdAt: z.union([z.date(), z.string()]),
+  updatedAt: z.union([z.date(), z.string()]).nullable(),
+})
+
+export type Todo = z.infer<typeof todoSchema>
+export type CreateTodoPayload = z.infer<typeof createTodoSchema>
+export type UpdateTodoPayload = z.infer<typeof updateTodoSchema>

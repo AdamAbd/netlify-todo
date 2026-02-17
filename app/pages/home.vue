@@ -14,12 +14,14 @@
     ListChecksIcon,
   } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
-  import type {
-    Todo,
-    TodoStatus,
-    TodoItem,
-    CreateTodoPayload,
-    UpdateTodoPayload,
+  import {
+    type Todo,
+    type TodoStatus,
+    type TodoItem,
+    type CreateTodoPayload,
+    type UpdateTodoPayload,
+    createTodoSchema,
+    updateTodoSchema,
   } from '#shared/types/todo'
 
   definePageMeta({
@@ -91,16 +93,19 @@
   }
 
   const handleCreate = async () => {
-    if (!createForm.title.trim()) return
-    const result = await createTodo({
-      ...createForm,
-      items: createForm.items?.length ? createForm.items : undefined,
-      imageUrl: createForm.imageUrl || undefined,
-      description: createForm.description || undefined,
-    })
+    const parseResult = createTodoSchema.safeParse(createForm)
+    if (!parseResult.success) {
+      toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
+      return
+    }
+
+    const result = await createTodo(parseResult.data)
     if (result.success) {
       isCreateDialogOpen.value = false
       resetCreateForm()
+      toast.success('Task created successfully')
+    } else {
+      toast.error(result.error)
     }
   }
 
@@ -155,16 +160,22 @@
   }
 
   const handleEdit = async () => {
-    if (!editingTodo.value || !editForm.title.trim()) return
-    await updateTodo(editingTodo.value.id, {
-      title: editForm.title,
-      description: editForm.description || undefined,
-      status: editForm.status,
-      items: editForm.items.length ? editForm.items : undefined,
-      imageUrl: editForm.imageUrl || undefined,
-    })
-    isEditDialogOpen.value = false
-    editingTodo.value = null
+    if (!editingTodo.value) return
+
+    const parseResult = updateTodoSchema.safeParse(editForm)
+    if (!parseResult.success) {
+      toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
+      return
+    }
+
+    const result = await updateTodo(editingTodo.value.id, parseResult.data)
+    if (result.success) {
+      isEditDialogOpen.value = false
+      editingTodo.value = null
+      toast.success('Task updated successfully')
+    } else {
+      toast.error(result.error)
+    }
   }
 
   const handleDelete = async (id: string) => {

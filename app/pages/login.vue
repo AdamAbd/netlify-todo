@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, LockIcon } from 'lucide-vue-next'
-  import { toTypedSchema } from '@vee-validate/zod'
   import { useForm, Field as VeeField } from 'vee-validate'
-  import * as z from 'zod'
+  import { loginSchema } from '#shared/types/user'
   import { authClient } from '@/lib/auth-client'
   import { toast } from 'vue-sonner'
 
@@ -17,13 +16,6 @@
       { name: 'description', content: 'Sign in to your Todoist account to manage your tasks.' },
     ],
   })
-
-  const loginSchema = toTypedSchema(
-    z.object({
-      email: z.string().email('Invalid email address'),
-      password: z.string().min(1, 'Password is required'),
-    })
-  )
 
   const { handleSubmit } = useForm({
     validationSchema: loginSchema,

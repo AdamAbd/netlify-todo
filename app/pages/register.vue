@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, UserIcon } from 'lucide-vue-next'
-  import { toTypedSchema } from '@vee-validate/zod'
   import { useForm, Field as VeeField } from 'vee-validate'
-  import * as z from 'zod'
+  import { registerSchema } from '#shared/types/user'
   import { authClient } from '@/lib/auth-client'
   import { toast } from 'vue-sonner'
 
@@ -20,20 +19,6 @@
       },
     ],
   })
-
-  const registerSchema = toTypedSchema(
-    z
-      .object({
-        name: z.string().min(2, 'Name must be at least 2 characters'),
-        email: z.string().email('Invalid email address'),
-        password: z.string().min(8, 'Password must be at least 8 characters'),
-        confirmPassword: z.string(),
-      })
-      .refine((data) => data.password === data.confirmPassword, {
-        message: 'Passwords do not match',
-        path: ['confirmPassword'],
-      })
-  )
 
   const { handleSubmit, values } = useForm({
     validationSchema: registerSchema,

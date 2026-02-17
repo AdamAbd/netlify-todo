@@ -1,23 +1,33 @@
 import { db } from '#server/db/db'
 import { todo } from '#server/db/schema'
 import { requireAuth } from '#server/utils/auth'
-import type { CreateTodoPayload } from '#shared/types/todo'
+import { createTodoSchema } from '#shared/types/todo'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)
   const userId = session.user.id
-  const body = await readBody<CreateTodoPayload>(event)
+
+  const body = await readBody(event)
+  const result = createTodoSchema.safeParse(body)
+
+  if (!result.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Bad Request',
+      data: result.error.flatten().fieldErrors,
+    })
+  }
+
+  const data = result.data
 
   const newTodo = await db
     .insert(todo)
     .values({
       id: crypto.randomUUID(),
       userId,
-      title: body.title,
-      description: body.description,
-      status: body.status || 'backlog',
-      items: body.items || [],
-      imageUrl: body.imageUrl,
+      ...data,
+      status: data.status, // ensured by z.enum().default()
+      items: data.items, // ensured by z.array().default()
     })
     .returning()
 
