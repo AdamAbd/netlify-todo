@@ -9,6 +9,7 @@
     type TodoStatus,
     type TodoItem,
     type CreateTodoPayload,
+    type UpdateTodoPayload,
     createTodoSchema,
   } from '#shared/types/todo'
 
@@ -26,7 +27,7 @@
   const emit = defineEmits<{
     'update:open': [value: boolean]
     create: [payload: CreateTodoPayload]
-    update: [payload: { id: string; payload: CreateTodoPayload }]
+    update: [payload: { id: string; payload: UpdateTodoPayload }]
   }>()
 
   const defaultTodoFormValues: CreateTodoPayload = {
