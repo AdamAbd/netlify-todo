@@ -1,9 +1,8 @@
 import { authClient } from '@/lib/auth-client'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  const { data: session } = await authClient.getSession()
-
-  if (session) {
+  const { data: session } = await authClient.useSession(useFetch)
+  if (session.value) {
     if (to.path !== '/home') {
       return navigateTo('/home')
     }
