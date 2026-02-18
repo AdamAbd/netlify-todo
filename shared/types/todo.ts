@@ -15,7 +15,12 @@ export const todoBaseSchema = z.object({
   description: z.string().max(500, { error: 'Description is too long' }).optional(),
   status: todoStatusSchema.default('backlog'),
   items: z.array(todoItemSchema).default([]),
-  imageUrl: z.union([z.url({ error: 'Must be a valid URL' }), z.literal('')]).optional(),
+  imageUrl: z
+    .preprocess(
+      (val) => (val === '' || val === undefined ? null : val),
+      z.url({ error: 'Must be a valid URL' }).nullable()
+    )
+    .optional(),
 })
 
 export const createTodoSchema = todoBaseSchema
