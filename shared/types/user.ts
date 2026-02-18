@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
-export const emailSchema = z.string().email('Invalid email address')
-export const passwordSchema = z.string().min(8, 'Password must be at least 8 characters')
+export const emailSchema = z.email({ error: 'Invalid email address' })
+export const passwordSchema = z.string().min(8, { error: 'Password must be at least 8 characters' })
 
 export const userBaseSchema = z.object({
   id: z.string(),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z.string().min(2, { error: 'Name must be at least 2 characters' }),
   email: emailSchema,
   emailVerified: z.boolean(),
   image: z.string().nullable().optional(),
@@ -21,7 +21,7 @@ export const registerSchema = z
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
+    error: 'Passwords do not match',
     path: ['confirmPassword'],
   })
 
@@ -40,7 +40,7 @@ export const resetPasswordSchema = z
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
+    error: 'Passwords do not match',
     path: ['confirmPassword'],
   })
 

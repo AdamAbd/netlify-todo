@@ -77,7 +77,7 @@
   const handleCreateFromDialog = async (payload: CreateTodoPayload) => {
     const parseResult = createTodoSchema.safeParse(payload)
     if (!parseResult.success) {
-      toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
+      toast.error(parseResult.error.issues[0]?.message || 'Validation failed')
       return
     }
 
@@ -99,7 +99,7 @@
   }) => {
     const parseResult = updateTodoSchema.safeParse(payload)
     if (!parseResult.success) {
-      toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
+      toast.error(parseResult.error.issues[0]?.message || 'Validation failed')
       return
     }
 
