@@ -96,7 +96,7 @@
         description: props.todo.description || '',
         status: props.todo.status,
         items: props.todo.items ? [...props.todo.items.map((item: TodoItem) => ({ ...item }))] : [],
-        imageUrl: props.todo.imageUrl || '',
+        imageUrl: props.todo.imageUrl || null,
       })
     },
     { immediate: true }
