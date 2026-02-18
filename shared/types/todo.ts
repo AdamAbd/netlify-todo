@@ -19,14 +19,22 @@ export const todoBaseSchema = z.object({
 })
 
 export const createTodoSchema = todoBaseSchema
-export const updateTodoSchema = todoBaseSchema.partial()
+export const updateTodoSchema = todoBaseSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field is required for update',
+  })
 
 export const todoSchema = todoBaseSchema.extend({
   id: z.string(),
   userId: z.string(),
+  description: z.string().max(500, 'Description is too long').nullable(),
+  imageUrl: z.string().url('Must be a valid URL').nullable(),
   createdAt: z.union([z.date(), z.string()]),
-  updatedAt: z.union([z.date(), z.string()]).nullable(),
+  updatedAt: z.union([z.date(), z.string()]),
 })
+
+export const todoListSchema = z.array(todoSchema)
 
 export type Todo = z.infer<typeof todoSchema>
 export type CreateTodoPayload = z.infer<typeof createTodoSchema>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import type { Component } from 'vue'
   import {
     PlusIcon,
     Loader2Icon,
@@ -10,7 +11,6 @@
     MoreHorizontalIcon,
     PencilIcon,
     ArrowRightIcon,
-    XIcon,
     ListChecksIcon,
   } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
@@ -19,8 +19,6 @@
     type TodoStatus,
     type TodoItem,
     type CreateTodoPayload,
-    type UpdateTodoPayload,
-    createTodoSchema,
     updateTodoSchema,
   } from '#shared/types/todo'
 
@@ -56,122 +54,57 @@
     fetchTodos()
   })
 
-  // Dialog state
-  const isCreateDialogOpen = ref(false)
-  const isEditDialogOpen = ref(false)
+  const isTodoDialogOpen = ref(false)
+  const dialogMode = ref<'create' | 'edit'>('create')
+  const dialogDefaultStatus = ref<TodoStatus>('backlog')
   const editingTodo = ref<Todo | null>(null)
 
-  // Create form
-  const createForm = reactive<CreateTodoPayload>({
-    title: '',
-    description: '',
-    status: 'backlog',
-    items: [],
-    imageUrl: '',
+  watch(isTodoDialogOpen, (open) => {
+    if (!open) {
+      editingTodo.value = null
+      dialogDefaultStatus.value = 'backlog'
+    }
   })
 
-  const newItemLabel = ref('')
-
-  const addItem = () => {
-    if (!newItemLabel.value.trim()) return
-    if (!createForm.items) createForm.items = []
-    createForm.items.push({ label: newItemLabel.value.trim(), checked: false })
-    newItemLabel.value = ''
+  const openCreateDialog = (status: TodoStatus = 'backlog') => {
+    dialogMode.value = 'create'
+    editingTodo.value = null
+    dialogDefaultStatus.value = status
+    isTodoDialogOpen.value = true
   }
 
-  const removeItem = (index: number) => {
-    createForm.items?.splice(index, 1)
+  const openEditDialog = (todo: Todo) => {
+    dialogMode.value = 'edit'
+    editingTodo.value = todo
+    isTodoDialogOpen.value = true
   }
 
-  const resetCreateForm = () => {
-    createForm.title = ''
-    createForm.description = ''
-    createForm.status = 'backlog'
-    createForm.items = []
-    createForm.imageUrl = ''
-    newItemLabel.value = ''
-  }
-
-  const handleCreate = async () => {
-    const parseResult = createTodoSchema.safeParse(createForm)
-    if (!parseResult.success) {
-      toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
-      return
-    }
-
-    const result = await createTodo(parseResult.data)
+  const handleCreateFromDialog = async (values: CreateTodoPayload) => {
+    const result = await createTodo(values)
     if (result.success) {
-      isCreateDialogOpen.value = false
-      resetCreateForm()
+      isTodoDialogOpen.value = false
       toast.success('Task created successfully')
     } else {
       toast.error(result.error)
     }
   }
 
-  const handleImageError = () => {
-    createForm.imageUrl = ''
-
-    toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
-  }
-
-  const handleEditImageError = () => {
-    editForm.imageUrl = ''
-
-    toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
-  }
-
-  // Edit form
-  const editForm = reactive<{
-    title: string
-    description: string
-    status: TodoStatus
-    items: TodoItem[]
-    imageUrl: string
-  }>({
-    title: '',
-    description: '',
-    status: 'backlog',
-    items: [],
-    imageUrl: '',
-  })
-
-  const editItemLabel = ref('')
-
-  const addEditItem = () => {
-    if (!editItemLabel.value.trim()) return
-    editForm.items.push({ label: editItemLabel.value.trim(), checked: false })
-    editItemLabel.value = ''
-  }
-
-  const removeEditItem = (index: number) => {
-    editForm.items.splice(index, 1)
-  }
-
-  const openEdit = (todo: Todo) => {
-    editingTodo.value = todo
-    editForm.title = todo.title
-    editForm.description = todo.description || ''
-    editForm.status = todo.status
-    editForm.items = todo.items ? [...todo.items.map((i: TodoItem) => ({ ...i }))] : []
-    editForm.imageUrl = todo.imageUrl || ''
-    editItemLabel.value = ''
-    isEditDialogOpen.value = true
-  }
-
-  const handleEdit = async () => {
-    if (!editingTodo.value) return
-
-    const parseResult = updateTodoSchema.safeParse(editForm)
+  const handleUpdateFromDialog = async ({
+    id,
+    payload,
+  }: {
+    id: string
+    payload: CreateTodoPayload
+  }) => {
+    const parseResult = updateTodoSchema.safeParse(payload)
     if (!parseResult.success) {
       toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
       return
     }
 
-    const result = await updateTodo(editingTodo.value.id, parseResult.data)
+    const result = await updateTodo(id, parseResult.data)
     if (result.success) {
-      isEditDialogOpen.value = false
-      editingTodo.value = null
+      isTodoDialogOpen.value = false
       toast.success('Task updated successfully')
     } else {
       toast.error(result.error)
@@ -187,7 +120,7 @@
   }
 
   // Column config
-  const columns: { key: TodoStatus; label: string; icon: any; dotColor: string }[] = [
+  const columns: { key: TodoStatus; label: string; icon: Component; dotColor: string }[] = [
     { key: 'backlog', label: 'Backlog', icon: CircleIcon, dotColor: 'bg-muted-foreground' },
     { key: 'in_progress', label: 'In Progress', icon: CircleDotIcon, dotColor: 'bg-primary' },
     { key: 'finished', label: 'Finished', icon: CheckCircle2Icon, dotColor: 'bg-secondary' },
@@ -205,15 +138,8 @@
     return null
   }
 
-  const getStatusBadgeVariant = (status: TodoStatus) => {
-    if (status === 'finished') return 'secondary' as const
-    if (status === 'in_progress') return 'default' as const
-    return 'outline' as const
-  }
-
   const openCreateForBacklog = () => {
-    createForm.status = 'backlog'
-    isCreateDialogOpen.value = true
+    openCreateDialog('backlog')
   }
 </script>
 
@@ -227,143 +153,10 @@
           {{ totalTodos }} total tasks · {{ completedTodos }} completed
         </p>
       </div>
-
-      <Dialog v-model:open="isCreateDialogOpen">
-        <DialogTrigger as-child>
-          <Button class="gap-2">
-            <PlusIcon class="size-4" />
-            Add Task
-          </Button>
-        </DialogTrigger>
-        <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task to your board. Fill in the details below.
-            </DialogDescription>
-          </DialogHeader>
-          <form class="space-y-4" @submit.prevent="handleCreate">
-            <!-- Title -->
-            <div class="space-y-2">
-              <Label for="create-title">Title</Label>
-              <Input
-                id="create-title"
-                v-model="createForm.title"
-                placeholder="Enter task title"
-                required
-              />
-            </div>
-
-            <!-- Description -->
-            <div class="space-y-2">
-              <Label for="create-desc">Description</Label>
-              <Textarea
-                id="create-desc"
-                v-model="createForm.description"
-                placeholder="Add a description (optional)"
-                class="min-h-20"
-              />
-            </div>
-
-            <!-- Status -->
-            <div class="space-y-2">
-              <Label>Status</Label>
-              <Select v-model="createForm.status">
-                <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
-                    {{ opt.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <!-- Image URL -->
-            <div class="space-y-2">
-              <Label for="create-image">Image URL</Label>
-              <div class="relative">
-                <ImageIcon
-                  class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                />
-                <Input
-                  id="create-image"
-                  v-model="createForm.imageUrl"
-                  placeholder="https://example.com/image.jpg"
-                  class="pl-10"
-                />
-              </div>
-              <!-- Image preview -->
-              <div v-if="createForm.imageUrl" class="relative overflow-hidden rounded-lg border">
-                <NuxtImg
-                  :src="createForm.imageUrl"
-                  alt="Preview"
-                  class="h-32 w-full object-cover"
-                  @error="handleImageError"
-                />
-                <button
-                  type="button"
-                  class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
-                  aria-label="Remove image"
-                  @click="createForm.imageUrl = ''"
-                >
-                  <XIcon class="size-3" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Checklist Items (JSONB) -->
-            <div class="space-y-2">
-              <Label>Checklist Items</Label>
-              <div class="space-y-2">
-                <div
-                  v-for="(item, idx) in createForm.items"
-                  :key="idx"
-                  class="bg-muted/30 flex items-center gap-2 rounded-md border px-3 py-2"
-                >
-                  <Checkbox
-                    :model-value="item.checked"
-                    @update:model-value="(val) => (item.checked = val as boolean)"
-                  />
-                  <span
-                    class="flex-1 text-sm"
-                    :class="item.checked ? 'text-muted-foreground line-through' : ''"
-                  >
-                    {{ item.label }}
-                  </span>
-                  <button
-                    type="button"
-                    class="text-muted-foreground hover:text-destructive"
-                    aria-label="Remove checklist item"
-                    @click="removeItem(idx)"
-                  >
-                    <XIcon class="size-3.5" />
-                  </button>
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <Input
-                  v-model="newItemLabel"
-                  placeholder="Add checklist item"
-                  class="flex-1"
-                  @keydown.enter.prevent="addItem"
-                />
-                <Button type="button" variant="outline" size="sm" @click="addItem">
-                  <PlusIcon class="size-4" />
-                </Button>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" @click="isCreateDialogOpen = false">
-                Cancel
-              </Button>
-              <Button type="submit" :disabled="!createForm.title.trim()"> Create Task </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <Button class="gap-2" @click="openCreateDialog()">
+        <PlusIcon class="size-4" />
+        Add Task
+      </Button>
     </div>
 
     <!-- Progress bar -->
@@ -458,7 +251,7 @@
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-48">
-                  <DropdownMenuItem @click="openEdit(todo)">
+                  <DropdownMenuItem @click="openEditDialog(todo)">
                     <PencilIcon class="mr-2 size-4" />
                     Edit
                   </DropdownMenuItem>
@@ -545,133 +338,13 @@
       </div>
     </div>
 
-    <!-- Edit Dialog -->
-    <Dialog v-model:open="isEditDialogOpen">
-      <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
-          <DialogDescription> Update the task details below. </DialogDescription>
-        </DialogHeader>
-        <form class="space-y-4" @submit.prevent="handleEdit">
-          <!-- Title -->
-          <div class="space-y-2">
-            <Label for="edit-title">Title</Label>
-            <Input
-              id="edit-title"
-              v-model="editForm.title"
-              placeholder="Enter task title"
-              required
-            />
-          </div>
-
-          <!-- Description -->
-          <div class="space-y-2">
-            <Label for="edit-desc">Description</Label>
-            <Textarea
-              id="edit-desc"
-              v-model="editForm.description"
-              placeholder="Add a description (optional)"
-              class="min-h-20"
-            />
-          </div>
-
-          <!-- Status -->
-          <div class="space-y-2">
-            <Label>Status</Label>
-            <Select v-model="editForm.status">
-              <SelectTrigger class="w-full">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
-                  {{ opt.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <!-- Image URL -->
-          <div class="space-y-2">
-            <Label for="edit-image">Image URL</Label>
-            <div class="relative">
-              <ImageIcon
-                class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
-              />
-              <Input
-                id="edit-image"
-                v-model="editForm.imageUrl"
-                placeholder="https://example.com/image.jpg"
-                class="pl-10"
-              />
-            </div>
-            <div v-if="editForm.imageUrl" class="relative overflow-hidden rounded-lg border">
-              <NuxtImg
-                :src="editForm.imageUrl"
-                alt="Preview"
-                class="h-32 w-full object-cover"
-                @error="handleEditImageError"
-              />
-              <button
-                type="button"
-                class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
-                aria-label="Remove image"
-                @click="editForm.imageUrl = ''"
-              >
-                <XIcon class="size-3" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Checklist Items -->
-          <div class="space-y-2">
-            <Label>Checklist Items</Label>
-            <div class="space-y-2">
-              <div
-                v-for="(item, idx) in editForm.items"
-                :key="idx"
-                class="bg-muted/30 flex items-center gap-2 rounded-md border px-3 py-2"
-              >
-                <Checkbox
-                  :model-value="item.checked"
-                  @update:model-value="(val) => (item.checked = val as boolean)"
-                />
-                <span
-                  class="flex-1 text-sm"
-                  :class="item.checked ? 'text-muted-foreground line-through' : ''"
-                >
-                  {{ item.label }}
-                </span>
-                <button
-                  type="button"
-                  class="text-muted-foreground hover:text-destructive"
-                  aria-label="Remove item"
-                  @click="removeEditItem(idx)"
-                >
-                  <XIcon class="size-3.5" />
-                </button>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <Input
-                v-model="editItemLabel"
-                placeholder="Add checklist item"
-                class="flex-1"
-                @keydown.enter.prevent="addEditItem"
-              />
-              <Button type="button" variant="outline" size="sm" @click="addEditItem">
-                <PlusIcon class="size-4" />
-              </Button>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" @click="isEditDialogOpen = false">
-              Cancel
-            </Button>
-            <Button type="submit" :disabled="!editForm.title.trim()"> Save Changes </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <SharedTodoDialog
+      v-model:open="isTodoDialogOpen"
+      :mode="dialogMode"
+      :todo="editingTodo"
+      :default-status="dialogDefaultStatus"
+      @create="handleCreateFromDialog"
+      @update="handleUpdateFromDialog"
+    />
   </div>
 </template>
