@@ -81,7 +81,7 @@
       return
     }
 
-    const result = await createTodo(payload)
+    const result = await createTodo(parseResult.data)
     if (result.success) {
       isTodoDialogOpen.value = false
       toast.success('Task created successfully')
