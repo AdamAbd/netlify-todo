@@ -7,10 +7,10 @@
     TODO_STATUSES,
     type Todo,
     type TodoStatus,
+    type TodoItem,
     type CreateTodoPayload,
     createTodoSchema,
   } from '#shared/types/todo'
-  import type { TodoItem } from '#shared/types/todo-item'
 
   interface Props {
     open: boolean

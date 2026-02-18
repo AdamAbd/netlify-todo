@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm'
 import { pgTable, text, timestamp, boolean, index, jsonb, pgEnum } from 'drizzle-orm/pg-core'
-import type { TodoItem } from '#shared/types/todo-item'
+import type { TodoItem } from '#shared/types/todo'
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),

@@ -1,4 +1,10 @@
-import type { Todo, TodoStatus, CreateTodoPayload, UpdateTodoPayload } from '#shared/types/todo'
+import type {
+  Todo,
+  TodoStatus,
+  TodoItem,
+  CreateTodoPayload,
+  UpdateTodoPayload,
+} from '#shared/types/todo'
 
 export function useTodos() {
   const todos = useState<Todo[]>('todos', () => [])
