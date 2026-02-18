@@ -1,6 +1,7 @@
 import { z } from 'zod'
+import { DEFAULT_TODO_STATUS, TODO_STATUSES } from '#shared/constants/todo-status'
 
-export const TODO_STATUSES = ['backlog', 'in_progress', 'finished'] as const
+export { TODO_STATUSES } from '#shared/constants/todo-status'
 export const todoStatusSchema = z.enum(TODO_STATUSES)
 export type TodoStatus = z.infer<typeof todoStatusSchema>
 
@@ -13,7 +14,7 @@ export type TodoItem = z.infer<typeof todoItemSchema>
 export const todoBaseSchema = z.object({
   title: z.string().min(1, { error: 'Title is required' }).max(100, { error: 'Title is too long' }),
   description: z.string().max(500, { error: 'Description is too long' }).optional(),
-  status: todoStatusSchema.default('backlog'),
+  status: todoStatusSchema.default(DEFAULT_TODO_STATUS),
   items: z.array(todoItemSchema).default([]),
   imageUrl: z
     .preprocess(
@@ -35,8 +36,8 @@ export const todoSchema = todoBaseSchema.extend({
   userId: z.string(),
   description: z.string().max(500, { error: 'Description is too long' }).nullable(),
   imageUrl: z.url({ error: 'Must be a valid URL' }).nullable(),
-  createdAt: z.union([z.date(), z.string()]),
-  updatedAt: z.union([z.date(), z.string()]),
+  createdAt: z.iso.datetime({ offset: true }),
+  updatedAt: z.iso.datetime({ offset: true }),
 })
 
 export const todoListSchema = z.array(todoSchema)

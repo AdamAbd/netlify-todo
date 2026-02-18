@@ -1,7 +1,9 @@
 import { db } from '#server/db/db'
 import { todo } from '#server/db/schema'
+import { mapTodoToDto } from '#server/mappers/todo.mapper'
 import { requireAuth } from '#server/utils/auth'
 import { createTodoSchema } from '#shared/types/todo'
+import { z } from 'zod'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)
@@ -14,7 +16,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: 'Bad Request',
-      data: result.error.flatten().fieldErrors,
+      data: z.treeifyError(result.error),
     })
   }
 
@@ -31,5 +33,13 @@ export default defineEventHandler(async (event) => {
     })
     .returning()
 
-  return newTodo[0]
+  const createdTodo = newTodo[0]
+  if (!createdTodo) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Failed to create todo',
+    })
+  }
+
+  return mapTodoToDto(createdTodo)
 })
