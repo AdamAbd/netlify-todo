@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { EyeIcon, EyeOffIcon, Loader2Icon, MailIcon, UserIcon } from 'lucide-vue-next'
+  import { toTypedSchema } from '@vee-validate/zod'
   import { useForm, Field as VeeField } from 'vee-validate'
   import { registerSchema } from '#shared/types/user'
   import { authClient } from '@/lib/auth-client'
@@ -21,7 +22,7 @@
   })
 
   const { handleSubmit, values } = useForm({
-    validationSchema: registerSchema,
+    validationSchema: toTypedSchema(registerSchema),
     initialValues: {
       name: '',
       email: '',

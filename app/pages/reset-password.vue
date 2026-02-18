@@ -9,7 +9,7 @@
   } from 'lucide-vue-next'
   import { toTypedSchema } from '@vee-validate/zod'
   import { useForm, Field as VeeField } from 'vee-validate'
-  import * as z from 'zod'
+  import { resetPasswordSchema } from '#shared/types/user'
   import { authClient } from '@/lib/auth-client'
   import { toast } from 'vue-sonner'
 
@@ -26,20 +26,8 @@
   const route = useRoute()
   const token = computed(() => (route.query.token as string) || '')
 
-  const resetPasswordSchema = toTypedSchema(
-    z
-      .object({
-        password: z.string().min(8, 'Password must be at least 8 characters'),
-        confirmPassword: z.string(),
-      })
-      .refine((data) => data.password === data.confirmPassword, {
-        message: 'Passwords do not match',
-        path: ['confirmPassword'],
-      })
-  )
-
   const { handleSubmit, values } = useForm({
-    validationSchema: resetPasswordSchema,
+    validationSchema: toTypedSchema(resetPasswordSchema),
     initialValues: {
       password: '',
       confirmPassword: '',
