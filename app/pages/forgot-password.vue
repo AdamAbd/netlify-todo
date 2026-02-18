@@ -2,7 +2,7 @@
   import { ArrowLeftIcon, Loader2Icon, MailIcon, CheckCircle2Icon } from 'lucide-vue-next'
   import { toTypedSchema } from '@vee-validate/zod'
   import { useForm, Field as VeeField } from 'vee-validate'
-  import * as z from 'zod'
+  import { forgotPasswordSchema } from '#shared/types/user'
   import { authClient } from '@/lib/auth-client'
   import { toast } from 'vue-sonner'
 
@@ -16,14 +16,8 @@
     meta: [{ name: 'description', content: 'Reset your Todoist password via email.' }],
   })
 
-  const forgotPasswordSchema = toTypedSchema(
-    z.object({
-      email: z.string().email('Invalid email address'),
-    })
-  )
-
   const { handleSubmit, values } = useForm({
-    validationSchema: forgotPasswordSchema,
+    validationSchema: toTypedSchema(forgotPasswordSchema),
     initialValues: {
       email: '',
     },
