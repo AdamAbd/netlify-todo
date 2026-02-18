@@ -3,22 +3,17 @@
   import {
     PlusIcon,
     Loader2Icon,
-    ImageIcon,
-    Trash2Icon,
     CheckCircle2Icon,
     CircleDotIcon,
     CircleIcon,
-    MoreHorizontalIcon,
-    PencilIcon,
-    ArrowRightIcon,
-    ListChecksIcon,
   } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
   import {
     type Todo,
     type TodoStatus,
-    type TodoItem,
     type CreateTodoPayload,
+    type UpdateTodoPayload,
+    createTodoSchema,
     updateTodoSchema,
   } from '#shared/types/todo'
 
@@ -79,8 +74,14 @@
     isTodoDialogOpen.value = true
   }
 
-  const handleCreateFromDialog = async (values: CreateTodoPayload) => {
-    const result = await createTodo(values)
+  const handleCreateFromDialog = async (payload: CreateTodoPayload) => {
+    const parseResult = createTodoSchema.safeParse(payload)
+    if (!parseResult.success) {
+      toast.error(parseResult.error.errors[0]?.message || 'Validation failed')
+      return
+    }
+
+    const result = await createTodo(payload)
     if (result.success) {
       isTodoDialogOpen.value = false
       toast.success('Task created successfully')
@@ -94,7 +95,7 @@
     payload,
   }: {
     id: string
-    payload: CreateTodoPayload
+    payload: UpdateTodoPayload
   }) => {
     const parseResult = updateTodoSchema.safeParse(payload)
     if (!parseResult.success) {
@@ -125,18 +126,6 @@
     { key: 'in_progress', label: 'In Progress', icon: CircleDotIcon, dotColor: 'bg-primary' },
     { key: 'finished', label: 'Finished', icon: CheckCircle2Icon, dotColor: 'bg-secondary' },
   ]
-
-  const statusOptions: { value: TodoStatus; label: string }[] = [
-    { value: 'backlog', label: 'Backlog' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'finished', label: 'Finished' },
-  ]
-
-  const getNextStatus = (current: TodoStatus): TodoStatus | null => {
-    if (current === 'backlog') return 'in_progress'
-    if (current === 'in_progress') return 'finished'
-    return null
-  }
 
   const openCreateForBacklog = () => {
     openCreateDialog('backlog')
@@ -214,131 +203,19 @@
           </div>
 
           <!-- Task cards -->
-          <div
+          <HomeTaskCard
             v-for="todo in todosByStatus[column.key]"
             :key="todo.id"
-            class="group bg-card relative rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md"
-            :class="{
-              'border-primary/20': column.key === 'in_progress',
-              'opacity-75': column.key === 'finished',
-            }"
-          >
-            <!-- Image -->
-            <div v-if="todo.imageUrl" class="mb-3 overflow-hidden rounded-md">
-              <img
-                :src="todo.imageUrl"
-                :alt="todo.title"
-                class="h-28 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-            </div>
-
-            <!-- Title & Actions -->
-            <div class="flex items-start justify-between gap-2">
-              <h3
-                class="text-sm leading-snug font-medium"
-                :class="column.key === 'finished' ? 'text-muted-foreground line-through' : ''"
-              >
-                {{ todo.title }}
-              </h3>
-              <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <MoreHorizontalIcon class="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" class="w-48">
-                  <DropdownMenuItem @click="openEditDialog(todo)">
-                    <PencilIcon class="mr-2 size-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <!-- Status changes -->
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel class="text-muted-foreground text-xs"
-                    >Move to</DropdownMenuLabel
-                  >
-                  <DropdownMenuItem
-                    v-for="opt in statusOptions.filter((s) => s.value !== todo.status)"
-                    :key="opt.value"
-                    @click="handleStatusChange(todo.id, opt.value)"
-                  >
-                    <ArrowRightIcon class="mr-2 size-4" />
-                    {{ opt.label }}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    class="text-destructive focus:text-destructive"
-                    @click="handleDelete(todo.id)"
-                  >
-                    <Trash2Icon class="mr-2 size-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <!-- Description -->
-            <p v-if="todo.description" class="text-muted-foreground mt-1 line-clamp-2 text-xs">
-              {{ todo.description }}
-            </p>
-
-            <!-- Checklist items preview -->
-            <div v-if="todo.items && todo.items.length > 0" class="mt-3 space-y-1.5">
-              <div
-                v-for="(item, idx) in todo.items.slice(0, 3)"
-                :key="idx"
-                class="flex items-center gap-2 text-xs"
-              >
-                <Checkbox :model-value="item.checked" class="size-3.5" disabled />
-                <span
-                  :class="item.checked ? 'text-muted-foreground line-through' : 'text-foreground'"
-                >
-                  {{ item.label }}
-                </span>
-              </div>
-              <p v-if="todo.items.length > 3" class="text-muted-foreground text-xs">
-                +{{ todo.items.length - 3 }} more items
-              </p>
-            </div>
-
-            <!-- Footer: Items count + quick move -->
-            <div class="mt-3 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div
-                  v-if="todo.items && todo.items.length"
-                  class="text-muted-foreground flex items-center gap-1 text-xs"
-                >
-                  <ListChecksIcon class="size-3.5" />
-                  {{ todo.items.filter((i: TodoItem) => i.checked).length }}/{{ todo.items.length }}
-                </div>
-                <div
-                  v-if="todo.imageUrl"
-                  class="text-muted-foreground flex items-center gap-1 text-xs"
-                >
-                  <ImageIcon class="size-3.5" />
-                </div>
-              </div>
-              <!-- Quick move button -->
-              <Button
-                v-if="getNextStatus(todo.status)"
-                variant="ghost"
-                size="sm"
-                class="h-7 gap-1 px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
-                @click="handleStatusChange(todo.id, getNextStatus(todo.status)!)"
-              >
-                <ArrowRightIcon class="size-3" />
-                {{ getNextStatus(todo.status) === 'in_progress' ? 'Start' : 'Done' }}
-              </Button>
-            </div>
-          </div>
+            :todo="todo"
+            @edit="openEditDialog"
+            @delete="handleDelete"
+            @status-change="handleStatusChange"
+          />
         </div>
       </div>
     </div>
 
-    <SharedTodoDialog
+    <HomeTodoDialog
       v-model:open="isTodoDialogOpen"
       :mode="dialogMode"
       :todo="editingTodo"
