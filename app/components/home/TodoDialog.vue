@@ -266,7 +266,7 @@
                   />
                 </div>
                 <p class="text-muted-foreground text-xs">
-                  Upload gambar untuk task. Format: JPG, PNG, WEBP, AVIF, GIF.
+                  Upload an image for your task. Formats: JPG, PNG, WEBP, AVIF, GIF.
                 </p>
                 <div
                   v-if="isUploadingImage"
