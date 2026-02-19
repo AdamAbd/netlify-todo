@@ -11,11 +11,7 @@
   import { toTypedSchema } from '@vee-validate/zod'
   import { Field as VeeField, useForm } from 'vee-validate'
   import { toast } from 'vue-sonner'
-  import {
-    type ConnectedAccount,
-    type ConnectedAccountsResponse,
-    updateProfileSchema,
-  } from '#shared/types/profile'
+  import { type ConnectedAccount, updateProfileSchema } from '#shared/types/profile'
   import { authClient } from '@/lib/auth-client'
 
   definePageMeta({
@@ -37,13 +33,32 @@
   const isProfilePending = computed(() => session.value?.isPending ?? false)
   const sessionError = computed(() => session.value?.error ?? null)
 
-  const { data: accountsResponse, pending: isAccountsPending, error: accountsError, refresh } =
-    await useFetch<ConnectedAccountsResponse>('/api/profile')
-
-  const connectedAccounts = computed<ConnectedAccount[]>(
-    () => accountsResponse.value?.connectedAccounts ?? []
-  )
+  const connectedAccounts = ref<ConnectedAccount[]>([])
+  const isAccountsPending = ref(true)
+  const accountsError = ref<unknown>(null)
   const loadError = computed(() => sessionError.value ?? accountsError.value ?? null)
+
+  const loadConnectedAccounts = async () => {
+    try {
+      isAccountsPending.value = true
+      accountsError.value = null
+
+      const { data, error } = await authClient.listAccounts()
+
+      if (error) {
+        accountsError.value = error
+        connectedAccounts.value = []
+        return
+      }
+
+      connectedAccounts.value = data ?? []
+    } catch (requestError: unknown) {
+      accountsError.value = requestError
+      connectedAccounts.value = []
+    } finally {
+      isAccountsPending.value = false
+    }
+  }
 
   const { handleSubmit, resetForm } = useForm({
     validationSchema: toTypedSchema(updateProfileSchema),
@@ -71,7 +86,10 @@
   const resolveErrorMessage = (value: unknown, fallback: string) => {
     if (!value || typeof value !== 'object') return fallback
 
-    const errorData = value as { data?: { statusMessage?: string; message?: string }; message?: string }
+    const errorData = value as {
+      data?: { statusMessage?: string; message?: string }
+      message?: string
+    }
     return errorData.data?.statusMessage || errorData.data?.message || errorData.message || fallback
   }
 
@@ -126,7 +144,7 @@
   const isSaving = ref(false)
 
   const refreshPageData = async () => {
-    const jobs: Promise<unknown>[] = [refresh()]
+    const jobs: Promise<unknown>[] = [loadConnectedAccounts()]
 
     if (session.value?.refetch) {
       jobs.push(session.value.refetch())
@@ -157,11 +175,15 @@
       isSaving.value = false
     }
   })
+
+  onMounted(async () => {
+    await loadConnectedAccounts()
+  })
 </script>
 
 <template>
   <div class="space-y-8">
-    <section class="relative overflow-hidden rounded-2xl border bg-card p-6 sm:p-8">
+    <section class="bg-card relative overflow-hidden rounded-2xl border p-6 sm:p-8">
       <div class="pointer-events-none absolute inset-0 -z-10">
         <div class="bg-primary/10 absolute top-0 -left-16 h-48 w-48 rounded-full blur-3xl" />
         <div class="bg-secondary/10 absolute right-0 -bottom-16 h-48 w-48 rounded-full blur-3xl" />
@@ -199,7 +221,10 @@
       </div>
     </section>
 
-    <div v-if="isProfilePending && !profile" class="flex items-center justify-center rounded-2xl border py-20">
+    <div
+      v-if="isProfilePending && !profile"
+      class="flex items-center justify-center rounded-2xl border py-20"
+    >
       <div class="text-muted-foreground flex items-center gap-2 text-sm">
         <Loader2Icon class="size-4 animate-spin" />
         Loading profile...
@@ -216,12 +241,12 @@
     <div v-else-if="profile" class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
       <div
         v-if="accountsError"
-        class="border-destructive/30 bg-destructive/10 text-destructive xl:col-span-2 rounded-xl border px-4 py-3 text-sm"
+        class="border-destructive/30 bg-destructive/10 text-destructive rounded-xl border px-4 py-3 text-sm xl:col-span-2"
       >
         {{ resolveErrorMessage(accountsError, 'Failed to load connected accounts') }}
       </div>
 
-      <section class="rounded-2xl border bg-card p-6 sm:p-8">
+      <section class="bg-card rounded-2xl border p-6 sm:p-8">
         <div class="mb-6 space-y-1">
           <h2 class="text-xl font-bold tracking-tight">Update Profile</h2>
           <p class="text-muted-foreground text-sm">Keep your account details up to date.</p>
@@ -304,7 +329,7 @@
         </form>
       </section>
 
-      <section class="rounded-2xl border bg-card p-6 sm:p-8">
+      <section class="bg-card rounded-2xl border p-6 sm:p-8">
         <div class="mb-6 space-y-1">
           <h2 class="text-xl font-bold tracking-tight">Connected Accounts</h2>
           <p class="text-muted-foreground text-sm">
@@ -312,7 +337,10 @@
           </p>
         </div>
 
-        <div v-if="isAccountsPending" class="text-muted-foreground mb-3 flex items-center gap-2 text-xs">
+        <div
+          v-if="isAccountsPending"
+          class="text-muted-foreground mb-3 flex items-center gap-2 text-xs"
+        >
           <Loader2Icon class="size-3.5 animate-spin" />
           Refreshing connected accounts...
         </div>
