@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { userBaseSchema } from '#shared/types/user'
+import { passwordSchema, userBaseSchema } from '#shared/types/user'
 
 export const updateProfileSchema = z.object({
   name: z
@@ -36,7 +36,23 @@ export const connectedAccountsResponseSchema = z.object({
   connectedAccounts: z.array(connectedAccountSchema),
 })
 
+export const linkCredentialSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    error: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
+
+export const linkCredentialRequestSchema = z.object({
+  newPassword: passwordSchema,
+})
+
 export type UpdateProfilePayload = z.infer<typeof updateProfileSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type ConnectedAccount = z.infer<typeof connectedAccountSchema>
 export type ConnectedAccountsResponse = z.infer<typeof connectedAccountsResponseSchema>
+export type LinkCredentialPayload = z.infer<typeof linkCredentialSchema>
+export type LinkCredentialRequest = z.infer<typeof linkCredentialRequestSchema>

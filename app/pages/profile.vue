@@ -12,7 +12,12 @@
   import { toTypedSchema } from '@vee-validate/zod'
   import { Field as VeeField, useForm } from 'vee-validate'
   import { toast } from 'vue-sonner'
-  import { type ConnectedAccount, updateProfileSchema } from '#shared/types/profile'
+  import {
+    type ConnectedAccount,
+    type LinkCredentialPayload,
+    linkCredentialSchema,
+    updateProfileSchema,
+  } from '#shared/types/profile'
   import { authClient } from '@/lib/auth-client'
 
   definePageMeta({
@@ -190,9 +195,37 @@
     ]
   })
 
+  const connectedProviderCount = computed(() => {
+    const providerIds = connectedAccounts.value.map((account) => account.providerId.toLowerCase())
+    return new Set(providerIds).size
+  })
+  const canUnlinkProvider = computed(() => connectedProviderCount.value > 1)
+
   const isSaving = ref(false)
   const isLinkingGoogle = ref(false)
   const isUnlinkingGoogle = ref(false)
+  const isLinkCredentialDialogOpen = ref(false)
+  const isLinkingCredential = ref(false)
+
+  const { handleSubmit: handleLinkCredentialSubmit, resetForm: resetLinkCredentialForm } =
+    useForm<LinkCredentialPayload>({
+      validationSchema: toTypedSchema(linkCredentialSchema),
+      initialValues: {
+        password: '',
+        confirmPassword: '',
+      },
+    })
+
+  watch(isLinkCredentialDialogOpen, (isOpen) => {
+    if (!isOpen) {
+      resetLinkCredentialForm({
+        values: {
+          password: '',
+          confirmPassword: '',
+        },
+      })
+    }
+  })
 
   const refreshPageData = async () => {
     const jobs: Promise<unknown>[] = [loadConnectedAccounts()]
@@ -277,6 +310,31 @@
       isUnlinkingGoogle.value = false
     }
   }
+
+  const openLinkCredentialDialog = () => {
+    isLinkCredentialDialogOpen.value = true
+  }
+
+  const handleLinkCredential = handleLinkCredentialSubmit(async (values) => {
+    try {
+      isLinkingCredential.value = true
+
+      await $fetch('/api/profile/link-credential', {
+        method: 'POST',
+        body: {
+          newPassword: values.password,
+        },
+      })
+
+      await loadConnectedAccounts()
+      isLinkCredentialDialogOpen.value = false
+      toast.success('Email & password linked')
+    } catch (requestError: unknown) {
+      toast.error(resolveErrorMessage(requestError, 'Failed to link email & password account'))
+    } finally {
+      isLinkingCredential.value = false
+    }
+  })
 
   onMounted(async () => {
     await loadConnectedAccounts()
@@ -515,10 +573,20 @@
                 </Badge>
 
                 <Button
+                  v-if="provider.id === 'credential' && !provider.connected"
+                  size="sm"
+                  variant="outline"
+                  :disabled="isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential"
+                  @click="openLinkCredentialDialog"
+                >
+                  Link Email & Password
+                </Button>
+
+                <Button
                   v-if="provider.id === 'google' && !provider.connected"
                   size="sm"
                   variant="outline"
-                  :disabled="isLinkingGoogle || isUnlinkingGoogle"
+                  :disabled="isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential"
                   @click="handleLinkGoogle"
                 >
                   <Loader2Icon v-if="isLinkingGoogle" class="mr-2 size-3.5 animate-spin" />
@@ -526,10 +594,10 @@
                 </Button>
 
                 <Button
-                  v-if="provider.id === 'google' && provider.connected"
+                  v-if="provider.id === 'google' && provider.connected && canUnlinkProvider"
                   size="sm"
                   variant="outline"
-                  :disabled="isLinkingGoogle || isUnlinkingGoogle"
+                  :disabled="isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential"
                   @click="handleUnlinkGoogle(provider.accountId)"
                 >
                   <Loader2Icon v-if="isUnlinkingGoogle" class="mr-2 size-3.5 animate-spin" />
@@ -539,6 +607,66 @@
             </div>
           </div>
         </div>
+
+        <Dialog v-model:open="isLinkCredentialDialogOpen">
+          <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Link Email & Password</DialogTitle>
+              <DialogDescription>
+                Add an email & password credential so you can sign in without social providers.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form class="space-y-4" @submit="handleLinkCredential">
+              <FormField v-slot="{ componentField }" name="password">
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autocomplete="new-password"
+                      placeholder="Create a strong password"
+                      :disabled="isLinkingCredential"
+                      v-bind="componentField"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              </FormField>
+
+              <FormField v-slot="{ componentField }" name="confirmPassword">
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      autocomplete="new-password"
+                      placeholder="Re-enter password"
+                      :disabled="isLinkingCredential"
+                      v-bind="componentField"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              </FormField>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  :disabled="isLinkingCredential"
+                  @click="isLinkCredentialDialogOpen = false"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" :disabled="isLinkingCredential">
+                  <Loader2Icon v-if="isLinkingCredential" class="mr-2 size-3.5 animate-spin" />
+                  {{ isLinkingCredential ? 'Linking...' : 'Link Credential' }}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         <div v-if="connectedAccounts.length" class="bg-muted/20 mt-5 rounded-xl border p-4">
           <p class="text-sm font-semibold">Detected provider IDs</p>
