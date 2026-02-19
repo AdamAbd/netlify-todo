@@ -128,20 +128,25 @@
         description: 'Primary credential used for signing in with email.',
         connected: Boolean(credentialAccount),
         connectedAt: credentialAccount?.createdAt,
+        accountId: credentialAccount?.accountId,
         icon: MailIcon,
       },
       {
         id: 'google',
+        providerId: 'google',
         label: 'Google',
         description: 'OAuth account for one-click login with Google.',
         connected: Boolean(googleAccount),
         connectedAt: googleAccount?.createdAt,
+        accountId: googleAccount?.accountId,
         icon: LinkIcon,
       },
     ]
   })
 
   const isSaving = ref(false)
+  const isLinkingGoogle = ref(false)
+  const isUnlinkingGoogle = ref(false)
 
   const refreshPageData = async () => {
     const jobs: Promise<unknown>[] = [loadConnectedAccounts()]
@@ -175,6 +180,46 @@
       isSaving.value = false
     }
   })
+
+  const handleLinkGoogle = async () => {
+    try {
+      isLinkingGoogle.value = true
+      const { error } = await authClient.linkSocial({
+        provider: 'google',
+        callbackURL: '/profile',
+      })
+
+      if (error) {
+        toast.error(error.message || 'Failed to link Google account')
+      }
+    } catch (requestError: unknown) {
+      toast.error(resolveErrorMessage(requestError, 'Failed to link Google account'))
+    } finally {
+      isLinkingGoogle.value = false
+    }
+  }
+
+  const handleUnlinkGoogle = async (accountId?: string) => {
+    try {
+      isUnlinkingGoogle.value = true
+      const payload = accountId
+        ? { providerId: 'google', accountId }
+        : { providerId: 'google' }
+
+      const { error } = await authClient.unlinkAccount(payload)
+      if (error) {
+        toast.error(error.message || 'Failed to unlink Google account')
+        return
+      }
+
+      await loadConnectedAccounts()
+      toast.success('Google account unlinked')
+    } catch (requestError: unknown) {
+      toast.error(resolveErrorMessage(requestError, 'Failed to unlink Google account'))
+    } finally {
+      isUnlinkingGoogle.value = false
+    }
+  }
 
   onMounted(async () => {
     await loadConnectedAccounts()
@@ -368,9 +413,33 @@
                   </p>
                 </div>
               </div>
-              <Badge :variant="provider.connected ? 'default' : 'secondary'" class="shrink-0">
-                {{ provider.connected ? 'Connected' : 'Not Connected' }}
-              </Badge>
+              <div class="flex shrink-0 flex-col items-end gap-2">
+                <Badge :variant="provider.connected ? 'default' : 'secondary'">
+                  {{ provider.connected ? 'Connected' : 'Not Connected' }}
+                </Badge>
+
+                <Button
+                  v-if="provider.id === 'google' && !provider.connected"
+                  size="sm"
+                  variant="outline"
+                  :disabled="isLinkingGoogle || isUnlinkingGoogle"
+                  @click="handleLinkGoogle"
+                >
+                  <Loader2Icon v-if="isLinkingGoogle" class="mr-2 size-3.5 animate-spin" />
+                  Link Google
+                </Button>
+
+                <Button
+                  v-if="provider.id === 'google' && provider.connected"
+                  size="sm"
+                  variant="outline"
+                  :disabled="isLinkingGoogle || isUnlinkingGoogle"
+                  @click="handleUnlinkGoogle(provider.accountId)"
+                >
+                  <Loader2Icon v-if="isUnlinkingGoogle" class="mr-2 size-3.5 animate-spin" />
+                  Unlink Google
+                </Button>
+              </div>
             </div>
           </div>
         </div>

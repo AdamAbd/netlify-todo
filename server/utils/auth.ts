@@ -33,6 +33,13 @@ export const auth = betterAuth({
       clientSecret: config.googleClientSecret,
     },
   },
+  account: {
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true,
+      trustedProviders: ['google', 'email-password'],
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
