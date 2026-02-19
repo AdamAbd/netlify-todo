@@ -2,6 +2,7 @@ import { db } from '#server/db/db'
 import { todo } from '#server/db/schema'
 import { mapTodoToDto } from '#server/mappers/todo.mapper'
 import { requireAuth } from '#server/utils/auth'
+import { DEFAULT_TODO_STATUS } from '#shared/constants/todo-status'
 import { createTodoSchema } from '#shared/types/todo'
 import { z } from 'zod'
 
@@ -10,7 +11,16 @@ export default defineEventHandler(async (event) => {
   const userId = session.user.id
 
   const body = await readBody(event)
-  const result = createTodoSchema.safeParse(body)
+  const normalizedBody =
+    typeof body === 'object' && body !== null
+      ? {
+          ...body,
+          status: (body as { status?: unknown }).status ?? DEFAULT_TODO_STATUS,
+          items: (body as { items?: unknown }).items ?? [],
+        }
+      : body
+
+  const result = createTodoSchema.safeParse(normalizedBody)
 
   if (!result.success) {
     throw createError({
@@ -28,8 +38,8 @@ export default defineEventHandler(async (event) => {
       id: crypto.randomUUID(),
       userId,
       ...data,
-      status: data.status, // ensured by z.enum().default()
-      items: data.items, // ensured by z.array().default()
+      status: data.status,
+      items: data.items,
     })
     .returning()
 
