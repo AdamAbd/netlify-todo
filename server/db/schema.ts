@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm'
 import { pgTable, text, timestamp, boolean, index, jsonb, pgEnum } from 'drizzle-orm/pg-core'
+import { DEFAULT_TODO_STATUS, TODO_STATUSES } from '#shared/constants/todo-status'
 import type { TodoItem } from '#shared/types/todo'
 
 export const user = pgTable('user', {
@@ -74,7 +75,7 @@ export const verification = pgTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)]
 )
 
-export const todoStatusEnum = pgEnum('todo_status', ['backlog', 'in_progress', 'finished'])
+export const todoStatusEnum = pgEnum('todo_status', TODO_STATUSES)
 
 export const todo = pgTable(
   'todo',
@@ -82,7 +83,7 @@ export const todo = pgTable(
     id: text('id').primaryKey(),
     title: text('title').notNull(),
     description: text('description'),
-    status: todoStatusEnum('status').default('backlog').notNull(),
+    status: todoStatusEnum('status').default(DEFAULT_TODO_STATUS).notNull(),
     items: jsonb('items').$type<TodoItem[]>().default([]).notNull(),
     imageUrl: text('image_url'),
     userId: text('user_id')

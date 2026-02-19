@@ -28,6 +28,8 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@nuxt/image": "2.0.0",
+    "@tanstack/vue-query": "^5.92.9",
+    "@tanstack/vue-query-devtools": "^6.1.5",
     "@tanstack/vue-table": "^8.21.3",
     "@unovis/ts": "^1.6.4",
     "@unovis/vue": "^1.6.4",

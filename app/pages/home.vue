@@ -3,6 +3,9 @@
   import {
     PlusIcon,
     Loader2Icon,
+    SearchIcon,
+    ArrowLeftIcon,
+    ArrowRightIcon,
     CheckCircle2Icon,
     CircleDotIcon,
     CircleIcon,
@@ -34,20 +37,35 @@
   const {
     todosByStatus,
     totalTodos,
+    totalMatchedTodos,
     completedTodos,
     progressPercentage,
     isLoading,
-    fetchTodos,
+    isFetching,
+    searchTerm,
+    sortValue,
+    sortOptions,
+    pageSize,
+    pageSizeOptions,
+    pagination,
+    canGoToPreviousPage,
+    canGoToNextPage,
+    goToPreviousPage,
+    goToNextPage,
+    setPageSize,
     createTodo,
     updateTodo,
     updateStatus,
     deleteTodo,
   } = useTodos()
 
-  // Fetch todos on mount
-  onMounted(() => {
-    fetchTodos()
-  })
+  const handleSortChange = (value: string) => {
+    sortValue.value = value
+  }
+
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(value)
+  }
 
   const isTodoDialogOpen = ref(false)
   const dialogMode = ref<'create' | 'edit'>('create')
@@ -113,11 +131,17 @@
   }
 
   const handleDelete = async (id: string) => {
-    await deleteTodo(id)
+    const result = await deleteTodo(id)
+    if (!result.success) {
+      toast.error(result.error)
+    }
   }
 
   const handleStatusChange = async (id: string, status: TodoStatus) => {
-    await updateStatus(id, status)
+    const result = await updateStatus(id, status)
+    if (!result.success) {
+      toast.error(result.error)
+    }
   }
 
   // Column config
@@ -139,7 +163,8 @@
       <div>
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">My Tasks</h1>
         <p class="text-muted-foreground mt-1">
-          {{ totalTodos }} total tasks · {{ completedTodos }} completed
+          Showing {{ totalTodos }} of {{ totalMatchedTodos }} tasks · {{ completedTodos }}
+          completed on this page
         </p>
       </div>
       <Button class="gap-2" @click="openCreateDialog()">
@@ -148,11 +173,57 @@
       </Button>
     </div>
 
+    <div class="grid gap-3 sm:grid-cols-[1fr_220px_140px]">
+      <div class="relative">
+        <SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <Input
+          v-model="searchTerm"
+          class="pl-9"
+          placeholder="Search by title or description..."
+          type="search"
+        />
+      </div>
+
+      <Select
+        :model-value="sortValue"
+        @update:model-value="(value) => handleSortChange(String(value))"
+      >
+        <SelectTrigger class="w-full">
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="option in sortOptions" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select
+        :model-value="String(pageSize)"
+        @update:model-value="(value) => handlePageSizeChange(String(value))"
+      >
+        <SelectTrigger class="w-full">
+          <SelectValue placeholder="Per page" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="size in pageSizeOptions" :key="size" :value="String(size)">
+            {{ size }} / page
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
     <!-- Progress bar -->
     <div class="space-y-2">
       <div class="flex items-center justify-between text-sm">
         <span class="text-muted-foreground">Overall progress</span>
-        <span class="font-medium">{{ progressPercentage }}%</span>
+        <div class="flex items-center gap-2">
+          <span v-if="isFetching" class="text-muted-foreground flex items-center gap-1 text-xs">
+            <Loader2Icon class="size-3 animate-spin" />
+            Updating...
+          </span>
+          <span class="font-medium">{{ progressPercentage }}%</span>
+        </div>
       </div>
       <Progress :model-value="progressPercentage" />
     </div>
@@ -212,6 +283,32 @@
             @status-change="handleStatusChange"
           />
         </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-muted-foreground text-sm">
+        Page {{ pagination.page }} of {{ pagination.totalPages || 1 }}
+      </p>
+      <div class="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="!canGoToPreviousPage || isFetching"
+          @click="goToPreviousPage"
+        >
+          <ArrowLeftIcon class="mr-1 size-4" />
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="!canGoToNextPage || isFetching"
+          @click="goToNextPage"
+        >
+          Next
+          <ArrowRightIcon class="ml-1 size-4" />
+        </Button>
       </div>
     </div>
 
