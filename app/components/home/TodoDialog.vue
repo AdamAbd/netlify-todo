@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { toTypedSchema } from '@vee-validate/zod'
   import { useForm } from 'vee-validate'
-  import { PlusIcon, ImageIcon, XIcon } from 'lucide-vue-next'
+  import { PlusIcon, ImageIcon, Loader2Icon, XIcon } from 'lucide-vue-next'
   import { toast } from 'vue-sonner'
   import {
     TODO_STATUSES,
@@ -44,6 +44,8 @@
   })
 
   const checklistInput = ref('')
+  const imageFileInput = ref<HTMLInputElement | null>(null)
+  const { uploadImage, isUploading: isUploadingImage, clearUploadError } = usePresign()
 
   const {
     handleSubmit,
@@ -64,6 +66,10 @@
 
   const resetTodoDialog = (status: TodoStatus = 'backlog') => {
     checklistInput.value = ''
+    clearUploadError()
+    if (imageFileInput.value) {
+      imageFileInput.value.value = ''
+    }
     resetForm({
       values: {
         ...defaultTodoFormValues,
@@ -96,7 +102,7 @@
         description: props.todo.description || '',
         status: props.todo.status,
         items: props.todo.items ? [...props.todo.items.map((item: TodoItem) => ({ ...item }))] : [],
-        imageUrl: props.todo.imageUrl || null,
+        imageUrl: props.todo.imageUrl || '',
       })
     },
     { immediate: true }
@@ -130,7 +136,45 @@
     toast.error('Gagal memuat gambar. Pastikan URL valid dan dapat diakses.')
   }
 
+  const removeImage = () => {
+    setFieldValue('imageUrl', '')
+    clearUploadError()
+    if (imageFileInput.value) {
+      imageFileInput.value.value = ''
+    }
+  }
+
+  const handleImageFileChange = async (event: Event) => {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    try {
+      const uploadedImage = await uploadImage(file, {
+        key: 'todos',
+      })
+      setFieldValue('imageUrl', uploadedImage.imageUrl)
+      toast.success('Gambar berhasil diunggah.')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal mengunggah gambar.'
+      toast.error(message)
+      setFieldValue('imageUrl', '')
+    } finally {
+      if (imageFileInput.value) {
+        imageFileInput.value.value = ''
+      }
+    }
+  }
+
   const onSubmit = handleSubmit(async (values) => {
+    if (isUploadingImage.value) {
+      toast.error('Tunggu upload gambar selesai dulu.')
+      return
+    }
+
     if (props.mode === 'create') {
       emit('create', values)
       return
@@ -202,19 +246,35 @@
           </FormItem>
         </FormField>
 
-        <FormField v-slot="{ componentField }" name="imageUrl">
+        <FormField v-slot="{ errorMessage }" name="imageUrl">
           <FormItem>
-            <FormLabel>Image URL</FormLabel>
+            <FormLabel>Image</FormLabel>
             <FormControl>
-              <div class="relative">
-                <ImageIcon
-                  class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                />
-                <Input
-                  placeholder="https://example.com/image.jpg"
-                  class="pl-10"
-                  v-bind="componentField"
-                />
+              <div class="space-y-2">
+                <div class="relative">
+                  <ImageIcon
+                    class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                  />
+                  <input
+                    ref="imageFileInput"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+                    class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive h-9 w-full min-w-0 rounded-md border bg-transparent py-1 pr-3 pl-10 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    :aria-invalid="Boolean(errorMessage)"
+                    :disabled="isUploadingImage"
+                    @change="handleImageFileChange"
+                  />
+                </div>
+                <p class="text-muted-foreground text-xs">
+                  Upload gambar untuk task. Format: JPG, PNG, WEBP, AVIF, GIF.
+                </p>
+                <div
+                  v-if="isUploadingImage"
+                  class="text-muted-foreground flex items-center gap-2 text-xs"
+                >
+                  <Loader2Icon class="size-3.5 animate-spin" />
+                  Uploading image...
+                </div>
               </div>
             </FormControl>
             <FormMessage />
@@ -232,7 +292,7 @@
             type="button"
             class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
             aria-label="Remove image"
-            @click="setFieldValue('imageUrl', '')"
+            @click="removeImage"
           >
             <XIcon class="size-3" />
           </button>
@@ -283,7 +343,7 @@
           <Button type="button" variant="outline" @click="emit('update:open', false)">
             Cancel
           </Button>
-          <Button type="submit">
+          <Button type="submit" :disabled="isUploadingImage">
             {{ mode === 'create' ? 'Create Task' : 'Save Changes' }}
           </Button>
         </DialogFooter>

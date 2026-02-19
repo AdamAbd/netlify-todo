@@ -51,5 +51,18 @@ export default defineNuxtConfig({
     resendApiKey: process.env.RESEND_API_KEY,
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    presign: {
+      fileMaxSizeBytes: Number(process.env.FILE_IMAGE_MAX_SIZE_BYTES ?? 5 * 1024 * 1024),
+      filePresignExpiresInSeconds: Number(process.env.FILE_IMAGE_PRESIGN_EXPIRES_IN_SECONDS ?? 120),
+      allowedMimeTypes:
+        process.env.ALLOWED_MIME_TYPES ?? 'image/jpeg,image/png,image/webp,image/avif,image/gif',
+    },
+    r2: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+      endpoint: process.env.R2_ENDPOINT,
+      bucketName: process.env.R2_BUCKET_NAME,
+      publicUrl: process.env.R2_PUBLIC_URL,
+    },
   },
 })
