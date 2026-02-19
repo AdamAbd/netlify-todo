@@ -7,6 +7,7 @@
     Loader2Icon,
     MailIcon,
     UserIcon,
+    XIcon,
   } from 'lucide-vue-next'
   import { toTypedSchema } from '@vee-validate/zod'
   import { Field as VeeField, useForm } from 'vee-validate'
@@ -37,6 +38,8 @@
   const isAccountsPending = ref(true)
   const accountsError = ref<unknown>(null)
   const loadError = computed(() => sessionError.value ?? accountsError.value ?? null)
+  const avatarFileInput = ref<HTMLInputElement | null>(null)
+  const { uploadImage, isUploading: isUploadingAvatar, clearUploadError } = usePresign()
 
   const loadConnectedAccounts = async () => {
     try {
@@ -60,7 +63,7 @@
     }
   }
 
-  const { handleSubmit, resetForm } = useForm({
+  const { handleSubmit, values: profileFormValues, setFieldValue, resetForm } = useForm({
     validationSchema: toTypedSchema(updateProfileSchema),
     initialValues: {
       name: '',
@@ -72,6 +75,11 @@
     () => profile.value,
     (value) => {
       if (!value) return
+
+      clearUploadError()
+      if (avatarFileInput.value) {
+        avatarFileInput.value.value = ''
+      }
 
       resetForm({
         values: {
@@ -104,6 +112,44 @@
     return new Intl.DateTimeFormat('id-ID', {
       dateStyle: 'medium',
     }).format(date)
+  }
+
+  const removeAvatar = () => {
+    setFieldValue('image', '')
+    clearUploadError()
+    if (avatarFileInput.value) {
+      avatarFileInput.value.value = ''
+    }
+  }
+
+  const handleAvatarPreviewError = () => {
+    removeAvatar()
+    toast.error('Gagal memuat avatar. Silakan coba unggah ulang.')
+  }
+
+  const handleAvatarFileChange = async (event: Event) => {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    try {
+      const uploadedImage = await uploadImage(file, {
+        key: 'users',
+      })
+      setFieldValue('image', uploadedImage.imageUrl)
+      toast.success('Avatar berhasil diunggah.')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal mengunggah avatar.'
+      toast.error(message)
+      setFieldValue('image', '')
+    } finally {
+      if (avatarFileInput.value) {
+        avatarFileInput.value.value = ''
+      }
+    }
   }
 
   const findConnectedAccount = (providerIds: string[]) => {
@@ -159,12 +205,23 @@
   }
 
   const onSubmit = handleSubmit(async (values) => {
+    if (isUploadingAvatar.value) {
+      toast.error('Tunggu upload avatar selesai dulu.')
+      return
+    }
+
     try {
       isSaving.value = true
 
+      let image: string | null = null
+      if (typeof values.image === 'string') {
+        const trimmedImage = values.image.trim()
+        image = trimmedImage || null
+      }
+
       const { error: updateError } = await authClient.updateUser({
         name: values.name.trim(),
-        image: values.image?.trim() ? values.image.trim() : null,
+        image,
       })
 
       if (updateError) {
@@ -342,31 +399,70 @@
             </div>
           </Field>
 
-          <VeeField v-slot="{ field, errors }" name="image">
+          <VeeField v-slot="{ errors }" name="image">
             <Field :data-invalid="!!errors.length">
-              <FieldLabel for="profile-image">Avatar URL</FieldLabel>
-              <InputGroup>
-                <InputGroupInput
-                  id="profile-image"
-                  :model-value="field.value"
-                  type="url"
-                  placeholder="https://example.com/avatar.jpg"
-                  :disabled="isSaving"
-                  @update:model-value="field.onChange"
-                />
-                <InputGroupAddon>
-                  <ImageIcon />
-                </InputGroupAddon>
-              </InputGroup>
+              <FieldLabel for="profile-image">Avatar Image</FieldLabel>
+              <div class="space-y-2">
+                <div class="relative">
+                  <ImageIcon
+                    class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                  />
+                  <input
+                    id="profile-image"
+                    ref="avatarFileInput"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+                    class="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive h-9 w-full min-w-0 rounded-md border bg-transparent py-1 pr-3 pl-10 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    :aria-invalid="Boolean(errors.length)"
+                    :disabled="isSaving || isUploadingAvatar"
+                    @change="handleAvatarFileChange"
+                  />
+                </div>
+                <p class="text-muted-foreground text-xs">
+                  Upload avatar. Format: JPG, PNG, WEBP, AVIF, GIF.
+                </p>
+                <div
+                  v-if="isUploadingAvatar"
+                  class="text-muted-foreground flex items-center gap-2 text-xs"
+                >
+                  <Loader2Icon class="size-3.5 animate-spin" />
+                  Uploading avatar...
+                </div>
+              </div>
               <FieldError v-if="errors.length" :errors="errors" />
             </Field>
           </VeeField>
 
+          <div
+            v-if="typeof profileFormValues.image === 'string' && profileFormValues.image"
+            class="relative overflow-hidden rounded-lg border"
+          >
+            <NuxtImg
+              :src="profileFormValues.image"
+              alt="Avatar preview"
+              class="h-32 w-full object-cover"
+              @error="handleAvatarPreviewError"
+            />
+            <button
+              type="button"
+              class="bg-background/80 absolute top-2 right-2 rounded-full p-1 backdrop-blur-sm"
+              aria-label="Remove avatar"
+              @click="removeAvatar"
+            >
+              <XIcon class="size-3" />
+            </button>
+          </div>
+
           <div class="flex items-center justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" :disabled="isSaving" @click="refreshPageData()">
+            <Button
+              type="button"
+              variant="outline"
+              :disabled="isSaving || isUploadingAvatar"
+              @click="refreshPageData()"
+            >
               Refresh
             </Button>
-            <Button type="submit" :disabled="isSaving">
+            <Button type="submit" :disabled="isSaving || isUploadingAvatar">
               <Loader2Icon v-if="isSaving" class="mr-2 size-4 animate-spin" />
               {{ isSaving ? 'Saving...' : 'Save Changes' }}
             </Button>
