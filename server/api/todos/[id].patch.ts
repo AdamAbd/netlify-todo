@@ -48,12 +48,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const updatedTodoRow = updatedTodo[0]
-  if (!updatedTodoRow) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Todo not found',
-    })
-  }
 
   return mapTodoToDto(updatedTodoRow)
 })
