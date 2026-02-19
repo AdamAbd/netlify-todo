@@ -76,9 +76,11 @@
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <UserIcon class="mr-2 size-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem as-child>
+                  <NuxtLink to="/profile" class="flex w-full items-center">
+                    <UserIcon class="mr-2 size-4" />
+                    <span>Profile</span>
+                  </NuxtLink>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
