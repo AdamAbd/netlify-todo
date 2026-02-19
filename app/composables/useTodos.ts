@@ -139,7 +139,7 @@ export function useTodos() {
   const totalMatchedTodos = computed(() => pagination.value.totalItems)
   const completedTodos = computed(() => todosByStatus.value.finished.length)
   const progressPercentage = computed(() =>
-    totalTodos.value ? Math.round((completedTodos.value / totalTodos.value) * 100) : 0
+    totalMatchedTodos.value ? Math.round((completedTodos.value / totalMatchedTodos.value) * 100) : 0
   )
 
   // Computed — Pagination
