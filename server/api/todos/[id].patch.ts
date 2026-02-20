@@ -40,14 +40,8 @@ export default defineEventHandler(async (event) => {
     .where(and(eq(todo.id, id), eq(todo.userId, userId)))
     .returning()
 
-  if (!updatedTodo.length) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Todo not found',
-    })
-  }
-
   const updatedTodoRow = updatedTodo[0]
+
   if (!updatedTodoRow) {
     throw createError({
       statusCode: 404,
