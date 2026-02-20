@@ -92,6 +92,7 @@ export const auth = betterAuth({
         })
         .catch((error) => {
           console.error('Failed to send reset password email:', error)
+          throw error
         })
     },
   },
@@ -141,6 +142,7 @@ export const auth = betterAuth({
         })
         .catch((error) => {
           console.error('Failed to send verification email:', error)
+          throw error
         })
     },
   },

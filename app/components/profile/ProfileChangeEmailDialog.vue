@@ -52,7 +52,8 @@
       <DialogHeader>
         <DialogTitle>Change Email</DialogTitle>
         <DialogDescription>
-          We will send a confirmation link to your current email before applying this change.
+          Your email address will be updated immediately. Make sure you have access to the new email
+          address.
         </DialogDescription>
       </DialogHeader>
 
