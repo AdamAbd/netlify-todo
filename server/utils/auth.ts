@@ -33,15 +33,29 @@ export const auth = betterAuth({
       clientSecret: config.googleClientSecret,
     },
   },
+  account: {
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true,
+      trustedProviders: ['google', 'email-password'],
+    },
+  },
+  user: {
+    changeEmail: {
+      enabled: true,
+      updateEmailWithoutVerification: true, // Since we send a confirmation email to the old email address, we can safely update the email without verification. If the user didn't request the change, they can click the link in the email to cancel it.
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await resend.emails.send({
-        from: 'Todoist <mada@scrapbooks.app>',
-        to: user.email,
-        subject: 'Reset your password',
-        html: `
+      await resend.emails
+        .send({
+          from: 'Todoist <mada@scrapbooks.app>',
+          to: user.email,
+          subject: 'Reset your password',
+          html: `
           <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
             <div style="padding: 40px 20px; text-align: center;">
               <h1 style="font-size: 24px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.025em;">
@@ -75,18 +89,22 @@ export const auth = betterAuth({
             </div>
           </div>
         `,
-      })
+        })
+        .catch((error) => {
+          console.error('Failed to send reset password email:', error)
+        })
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await resend.emails.send({
-        from: 'Todoist <mada@scrapbooks.app>',
-        to: user.email,
-        subject: 'Verify your email address',
-        html: `
+      await resend.emails
+        .send({
+          from: 'Todoist <mada@scrapbooks.app>',
+          to: user.email,
+          subject: 'Verify your email address',
+          html: `
           <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
             <div style="padding: 40px 20px; text-align: center;">
               <h1 style="font-size: 24px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.025em;">
@@ -120,7 +138,10 @@ export const auth = betterAuth({
             </div>
           </div>
         `,
-      })
+        })
+        .catch((error) => {
+          console.error('Failed to send verification email:', error)
+        })
     },
   },
 })
