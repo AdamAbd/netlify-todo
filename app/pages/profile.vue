@@ -12,12 +12,7 @@
   import { toTypedSchema } from '@vee-validate/zod'
   import { Field as VeeField, useForm } from 'vee-validate'
   import { toast } from 'vue-sonner'
-  import {
-    type ConnectedAccount,
-    type LinkCredentialPayload,
-    linkCredentialSchema,
-    updateProfileSchema,
-  } from '#shared/types/profile'
+  import { type ConnectedAccount, updateProfileSchema } from '#shared/types/profile'
   import { authClient } from '@/lib/auth-client'
 
   definePageMeta({
@@ -68,13 +63,19 @@
     }
   }
 
-  const { handleSubmit, values: profileFormValues, setFieldValue, resetForm } = useForm({
+  const profileForm = useForm({
     validationSchema: toTypedSchema(updateProfileSchema),
     initialValues: {
       name: '',
       image: '',
     },
   })
+  const {
+    handleSubmit: handleProfileSubmit,
+    values: profileFormValues,
+    setFieldValue,
+    resetForm,
+  } = profileForm
 
   watch(
     () => profile.value,
@@ -200,32 +201,26 @@
     return new Set(providerIds).size
   })
   const canUnlinkProvider = computed(() => connectedProviderCount.value > 1)
+  const credentialProviderIds = ['credential', 'email', 'email-password', 'password']
+  const canChangeEmail = computed(() => {
+    const providerIds = new Set(
+      connectedAccounts.value.map((account) => account.providerId.toLowerCase())
+    )
+    const hasCredentialProvider = credentialProviderIds.some((providerId) =>
+      providerIds.has(providerId)
+    )
+    const hasGoogleProvider = providerIds.has('google')
+
+    return hasCredentialProvider && !hasGoogleProvider && providerIds.size === 1
+  })
 
   const isSaving = ref(false)
   const isLinkingGoogle = ref(false)
   const isUnlinkingGoogle = ref(false)
   const isLinkCredentialDialogOpen = ref(false)
   const isLinkingCredential = ref(false)
-
-  const { handleSubmit: handleLinkCredentialSubmit, resetForm: resetLinkCredentialForm } =
-    useForm<LinkCredentialPayload>({
-      validationSchema: toTypedSchema(linkCredentialSchema),
-      initialValues: {
-        password: '',
-        confirmPassword: '',
-      },
-    })
-
-  watch(isLinkCredentialDialogOpen, (isOpen) => {
-    if (!isOpen) {
-      resetLinkCredentialForm({
-        values: {
-          password: '',
-          confirmPassword: '',
-        },
-      })
-    }
-  })
+  const isChangeEmailDialogOpen = ref(false)
+  const isChangingEmail = ref(false)
 
   const refreshPageData = async () => {
     const jobs: Promise<unknown>[] = [loadConnectedAccounts()]
@@ -237,7 +232,7 @@
     await Promise.all(jobs)
   }
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = handleProfileSubmit(async (values) => {
     if (isUploadingAvatar.value) {
       toast.error('Tunggu upload avatar selesai dulu.')
       return
@@ -292,9 +287,7 @@
   const handleUnlinkGoogle = async (accountId?: string) => {
     try {
       isUnlinkingGoogle.value = true
-      const payload = accountId
-        ? { providerId: 'google', accountId }
-        : { providerId: 'google' }
+      const payload = accountId ? { providerId: 'google', accountId } : { providerId: 'google' }
 
       const { error } = await authClient.unlinkAccount(payload)
       if (error) {
@@ -315,14 +308,25 @@
     isLinkCredentialDialogOpen.value = true
   }
 
-  const handleLinkCredential = handleLinkCredentialSubmit(async (values) => {
+  const openChangeEmailDialog = () => {
+    if (!canChangeEmail.value) {
+      toast.error(
+        'Email hanya bisa diubah saat akun terhubung hanya Email & Password (tanpa Google).'
+      )
+      return
+    }
+
+    isChangeEmailDialogOpen.value = true
+  }
+
+  const handleLinkCredential = async (newPassword: string) => {
     try {
       isLinkingCredential.value = true
 
       await $fetch('/api/profile/link-credential', {
         method: 'POST',
         body: {
-          newPassword: values.password,
+          newPassword,
         },
       })
 
@@ -334,7 +338,47 @@
     } finally {
       isLinkingCredential.value = false
     }
-  })
+  }
+
+  const handleChangeEmail = async (newEmail: string) => {
+    if (!profile.value) {
+      toast.error('Failed to get current session')
+      return
+    }
+
+    if (!canChangeEmail.value) {
+      toast.error(
+        'Email hanya bisa diubah saat akun terhubung hanya Email & Password (tanpa Google).'
+      )
+      return
+    }
+
+    if (newEmail.toLowerCase() === profile.value.email.toLowerCase()) {
+      toast.error('Please use a different email address')
+      return
+    }
+
+    try {
+      isChangingEmail.value = true
+
+      const { error } = await authClient.changeEmail({
+        newEmail,
+        callbackURL: '/profile',
+      })
+
+      if (error) {
+        toast.error(error.message || 'Failed to request email change')
+        return
+      }
+
+      isChangeEmailDialogOpen.value = false
+      toast.success('Please approve the request from your new email')
+    } catch (requestError: unknown) {
+      toast.error(resolveErrorMessage(requestError, 'Failed to request email change'))
+    } finally {
+      isChangingEmail.value = false
+    }
+  }
 
   onMounted(async () => {
     await loadConnectedAccounts()
@@ -413,7 +457,7 @@
         </div>
 
         <form class="space-y-5" @submit="onSubmit">
-          <VeeField v-slot="{ field, errors }" name="name">
+          <VeeField v-slot="{ field, errors }" name="name" :form="profileForm">
             <Field :data-invalid="!!errors.length">
               <FieldLabel for="profile-name">Full Name</FieldLabel>
               <InputGroup>
@@ -455,9 +499,24 @@
                 {{ profile.emailVerified ? 'Email verified' : 'Email not verified yet' }}
               </span>
             </div>
+            <div class="mt-3">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                :disabled="isSaving || isChangingEmail || !canChangeEmail"
+                @click="openChangeEmailDialog"
+              >
+                <Loader2Icon v-if="isChangingEmail" class="mr-2 size-3.5 animate-spin" />
+                Change Email
+              </Button>
+            </div>
+            <p v-if="!canChangeEmail" class="text-muted-foreground mt-2 text-xs">
+              Change email hanya tersedia saat akun terhubung hanya Email & Password (tanpa Google).
+            </p>
           </Field>
 
-          <VeeField v-slot="{ errors }" name="image">
+          <VeeField v-slot="{ errors }" name="image" :form="profileForm">
             <Field :data-invalid="!!errors.length">
               <FieldLabel for="profile-image">Avatar Image</FieldLabel>
               <div class="space-y-2">
@@ -576,7 +635,9 @@
                   v-if="provider.id === 'credential' && !provider.connected"
                   size="sm"
                   variant="outline"
-                  :disabled="isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential"
+                  :disabled="
+                    isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential || isChangingEmail
+                  "
                   @click="openLinkCredentialDialog"
                 >
                   Link Email & Password
@@ -586,7 +647,9 @@
                   v-if="provider.id === 'google' && !provider.connected"
                   size="sm"
                   variant="outline"
-                  :disabled="isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential"
+                  :disabled="
+                    isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential || isChangingEmail
+                  "
                   @click="handleLinkGoogle"
                 >
                   <Loader2Icon v-if="isLinkingGoogle" class="mr-2 size-3.5 animate-spin" />
@@ -597,7 +660,9 @@
                   v-if="provider.id === 'google' && provider.connected && canUnlinkProvider"
                   size="sm"
                   variant="outline"
-                  :disabled="isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential"
+                  :disabled="
+                    isLinkingGoogle || isUnlinkingGoogle || isLinkingCredential || isChangingEmail
+                  "
                   @click="handleUnlinkGoogle(provider.accountId)"
                 >
                   <Loader2Icon v-if="isUnlinkingGoogle" class="mr-2 size-3.5 animate-spin" />
@@ -608,65 +673,17 @@
           </div>
         </div>
 
-        <Dialog v-model:open="isLinkCredentialDialogOpen">
-          <DialogContent class="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Link Email & Password</DialogTitle>
-              <DialogDescription>
-                Add an email & password credential so you can sign in without social providers.
-              </DialogDescription>
-            </DialogHeader>
+        <ProfileLinkCredentialDialog
+          v-model:open="isLinkCredentialDialogOpen"
+          :is-pending="isLinkingCredential"
+          @submit="handleLinkCredential"
+        />
 
-            <form class="space-y-4" @submit="handleLinkCredential">
-              <FormField v-slot="{ componentField }" name="password">
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      autocomplete="new-password"
-                      placeholder="Create a strong password"
-                      :disabled="isLinkingCredential"
-                      v-bind="componentField"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              </FormField>
-
-              <FormField v-slot="{ componentField }" name="confirmPassword">
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      autocomplete="new-password"
-                      placeholder="Re-enter password"
-                      :disabled="isLinkingCredential"
-                      v-bind="componentField"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              </FormField>
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  :disabled="isLinkingCredential"
-                  @click="isLinkCredentialDialogOpen = false"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" :disabled="isLinkingCredential">
-                  <Loader2Icon v-if="isLinkingCredential" class="mr-2 size-3.5 animate-spin" />
-                  {{ isLinkingCredential ? 'Linking...' : 'Link Credential' }}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <ProfileChangeEmailDialog
+          v-model:open="isChangeEmailDialogOpen"
+          :is-pending="isChangingEmail"
+          @submit="handleChangeEmail"
+        />
 
         <div v-if="connectedAccounts.length" class="bg-muted/20 mt-5 rounded-xl border p-4">
           <p class="text-sm font-semibold">Detected provider IDs</p>

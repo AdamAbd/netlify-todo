@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { passwordSchema, userBaseSchema } from '#shared/types/user'
+import { emailSchema, passwordSchema, userBaseSchema } from '#shared/types/user'
 
 export const updateProfileSchema = z.object({
   name: z
@@ -50,9 +50,14 @@ export const linkCredentialRequestSchema = z.object({
   newPassword: passwordSchema,
 })
 
+export const changeEmailSchema = z.object({
+  newEmail: emailSchema,
+})
+
 export type UpdateProfilePayload = z.infer<typeof updateProfileSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type ConnectedAccount = z.infer<typeof connectedAccountSchema>
 export type ConnectedAccountsResponse = z.infer<typeof connectedAccountsResponseSchema>
 export type LinkCredentialPayload = z.infer<typeof linkCredentialSchema>
 export type LinkCredentialRequest = z.infer<typeof linkCredentialRequestSchema>
+export type ChangeEmailPayload = z.infer<typeof changeEmailSchema>
